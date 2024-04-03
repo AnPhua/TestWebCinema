@@ -34,11 +34,13 @@ namespace WebXemPhim.Services.Implements
         private readonly UserConverter _converter;
         private readonly IConfiguration _configuration;
         private readonly ResponseObject<DataResponsesToken> _responseTokenObject;
-        public UserServices(IConfiguration configuration)
+        private readonly IHttpContextAccessor _contextAccessor;
+        public UserServices(IConfiguration configuration,IHttpContextAccessor httpContextAccessor)
         {
             _converter = new UserConverter();
             _responseObject = new ResponseObject<DataResponsesUser>();
             _configuration = configuration;
+            _contextAccessor = httpContextAccessor;
             _responseTokenObject = new ResponseObject<DataResponsesToken>();
         }
         private string RandomActiveCode()
@@ -185,7 +187,6 @@ namespace WebXemPhim.Services.Implements
             var secretKeyByte = System.Text.Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:SecretKey").Value);
 
             var role = _appDbContext.Roles.SingleOrDefault(x => x.Id == user.RoleId);
-
             var tokenDescription = new SecurityTokenDescriptor // mô tả về token
             {
                 Subject = new System.Security.Claims.ClaimsIdentity(
@@ -193,7 +194,9 @@ namespace WebXemPhim.Services.Implements
                 {
                     new Claim("Id",user.Id.ToString()),
                     new Claim("Email",user.Email),
-                    new Claim("Role-Name",role.Code),
+                    new Claim("Name",user.Name),
+                    new Claim(ClaimTypes.Role,role?.Code ?? ""),
+
                 }),
                 Expires = DateTime.UtcNow.AddMinutes(30),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKeyByte),SecurityAlgorithms.HmacSha256Signature)
@@ -248,6 +251,21 @@ namespace WebXemPhim.Services.Implements
                 return _responseTokenObject.ResponseFail(StatusCodes.Status400BadRequest, "Password không chính xác! T.T", null);
             }
             return _responseTokenObject.ResponseSucess("Đăng Nhập Thành Công ^^!", GenerateAccessToken(user));
+        }
+
+        public IQueryable<DataResponsesUser> GetAllInfomation()
+        {
+            var currentUser = _contextAccessor.HttpContext.User;
+            if (!currentUser.Identity.IsAuthenticated)
+            {
+                throw new UnauthorizedAccessException("Không xác định được người dùng!!!");
+            }
+            if (!currentUser.IsInRole("Admin") && !currentUser.IsInRole("Censor"))
+            {
+                throw new UnauthorizedAccessException("Không đủ điều kiện để thực hiện chức năng này!!!!");
+            }
+            var result = _appDbContext.Users.Select(x => _converter.ConvertDt(x));
+            return result;
         }
     }
 }

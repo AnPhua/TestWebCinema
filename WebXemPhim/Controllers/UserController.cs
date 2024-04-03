@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using WebXemPhim.Entities;
 using WebXemPhim.Payloads.DataRequests;
 using WebXemPhim.Services.Interfaces;
 
@@ -33,7 +36,16 @@ namespace WebXemPhim.Controllers
             var result = _userServices.LoginAcc(requests);
             if (result.Status == 400) { return BadRequest(result); }
             else if (result.Status == 404) { return NotFound(result); }
+            else if (result.Status == 500) { return NotFound(result); }
             return Ok(result);
         }
+        [HttpGet("/api/auth/getallinformation")]
+        [Authorize(Roles = "Admin,Censor")]
+        public IActionResult GetAllInformation()
+        {
+            var results = _userServices.GetAllInfomation(); 
+            return Ok(results); 
+        }
+
     }
 }

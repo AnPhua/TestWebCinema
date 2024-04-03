@@ -14,5 +14,6 @@ namespace WebXemPhim.Services.Interfaces
         DataResponsesToken RestartAccessToKen(Requests_RestartToken requests);
 
         ResponseObject<DataResponsesToken> LoginAcc(Requests_Login requests);
+        IQueryable<DataResponsesUser> GetAllInfomation();
     }
 }
