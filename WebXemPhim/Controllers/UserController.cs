@@ -27,5 +27,13 @@ namespace WebXemPhim.Controllers
         {
             return Ok(_userServices.ConfirmNewAcc(requests));
         }
+        [HttpPost("/api/auth/login")]
+        public IActionResult LoginaAcc([FromBody]Requests_Login requests)
+        {
+            var result = _userServices.LoginAcc(requests);
+            if (result.Status == 400) { return BadRequest(result); }
+            else if (result.Status == 404) { return NotFound(result); }
+            return Ok(result);
+        }
     }
 }

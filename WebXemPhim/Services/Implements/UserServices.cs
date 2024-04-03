@@ -16,19 +16,30 @@ using System.Net;
 using Azure.Core;
 using Microsoft.EntityFrameworkCore;
 using System.Drawing;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Components.Forms;
+using System.Security.Cryptography;
+using System.Net.WebSockets;
+using Microsoft.Identity.Client;
 
 namespace WebXemPhim.Services.Implements
 {
-    public class UserServices : IUserServices
+    public class UserServices : BaseServices , IUserServices
     {
-        private readonly AppDbContext _appDbContext;
+        
         private readonly ResponseObject<DataResponsesUser> _responseObject;
         private readonly UserConverter _converter;
-        public UserServices()
+        private readonly IConfiguration _configuration;
+        private readonly ResponseObject<DataResponsesToken> _responseTokenObject;
+        public UserServices(IConfiguration configuration)
         {
             _converter = new UserConverter();
-            _appDbContext = new AppDbContext();
             _responseObject = new ResponseObject<DataResponsesUser>();
+            _configuration = configuration;
+            _responseTokenObject = new ResponseObject<DataResponsesToken>();
         }
         private string RandomActiveCode()
         {
@@ -143,10 +154,15 @@ namespace WebXemPhim.Services.Implements
             }
             if (confirmEmail.ExpiredTime < DateTime.UtcNow)
             {
-                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Mã Xác Thực Hết Hiệu Lực!", null);
+                User userdetele = _appDbContext.Users.FirstOrDefault(x => x.Id == confirmEmail.UserId);
+                _appDbContext.ConfirmEmails.Remove(confirmEmail);
+                _appDbContext.Users.Remove(userdetele);
+                _appDbContext.SaveChanges();
+                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Mã Xác Thực Hết Hiệu Lực ! Hãy Đăng Kí Lại Tài Khoản (T.T)", null);
             }
             User user = _appDbContext.Users.FirstOrDefault(x => x.Id == confirmEmail.UserId);
             user.UserStatusId = 2;
+            user.IsActive = true;
             _appDbContext.ConfirmEmails.Remove(confirmEmail);
             _appDbContext.Users.Update(user);
             _appDbContext.SaveChangesAsync();
@@ -154,5 +170,84 @@ namespace WebXemPhim.Services.Implements
             return _responseObject.ResponseSucess("Xác Thực Tài Khoản Thành Công!", result);
         }
 
+        private string GenerateRefreshToken()
+        {
+            var random = new byte[64];
+            using(var item = RandomNumberGenerator.Create())
+            {
+                item.GetBytes(random);
+                return Convert.ToBase64String(random);
+            }
+        }
+        public DataResponsesToken GenerateAccessToken(User user)
+        {
+            var jwtTokenHandler = new JwtSecurityTokenHandler();
+            var secretKeyByte = System.Text.Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:SecretKey").Value);
+
+            var role = _appDbContext.Roles.SingleOrDefault(x => x.Id == user.RoleId);
+
+            var tokenDescription = new SecurityTokenDescriptor // mô tả về token
+            {
+                Subject = new System.Security.Claims.ClaimsIdentity(
+                new[]
+                {
+                    new Claim("Id",user.Id.ToString()),
+                    new Claim("Email",user.Email),
+                    new Claim("Role-Name",role.Code),
+                }),
+                Expires = DateTime.UtcNow.AddMinutes(30),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKeyByte),SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = jwtTokenHandler.CreateToken(tokenDescription);//Tạo ra token dựa trên token đã mô tả
+            var accessToken = jwtTokenHandler.WriteToken(token);//Security token chuyeen sang string
+            var refreshToKen = GenerateRefreshToken();
+            RefreshToken rf = new RefreshToken
+            {
+                Token = refreshToKen,
+                ExpiredTime = DateTime.UtcNow.AddHours(2),
+                UserId = user.Id,
+            };//lamf moi accesstoken khi no het han
+            _appDbContext.RefreshTokens.Add(rf);
+            _appDbContext.SaveChanges();
+            DataResponsesToken result = new DataResponsesToken
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToKen,
+            };
+            return result;
+        }
+
+        public DataResponsesToken RestartAccessToKen(Requests_RestartToken requests)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ResponseObject<DataResponsesToken> LoginAcc(Requests_Login requests)
+        {
+            var user = _appDbContext.Users.SingleOrDefault(x => x.Username.Equals(requests.UserName));
+            bool checkPass = BCryptpw.Verify(requests.Password, user.Password);
+            if (string.IsNullOrEmpty(requests.UserName)||
+               string.IsNullOrEmpty(requests.Password))
+            {
+                return _responseTokenObject.ResponseFail(StatusCodes.Status400BadRequest, "Username và Password đang bị trống!",null);
+            }
+            if (user == null)
+            {
+                return _responseTokenObject.ResponseFail(StatusCodes.Status400BadRequest, "Username không tồn tại! T.T", null);
+            }
+            if (user.UserStatusId == 1) //có thể vào
+            {
+                return _responseTokenObject.ResponseFail(StatusCodes.Status401Unauthorized, "Tài Khoản của bạn chưa được kích hoạt!", null);
+            }
+            if (user.IsActive == false)
+            {
+                return _responseTokenObject.ResponseFail(StatusCodes.Status400BadRequest, "Tài Khoản của bạn đã bị xóa!", null);
+            }
+            if (!checkPass)
+            {
+                return _responseTokenObject.ResponseFail(StatusCodes.Status400BadRequest, "Password không chính xác! T.T", null);
+            }
+            return _responseTokenObject.ResponseSucess("Đăng Nhập Thành Công ^^!", GenerateAccessToken(user));
+        }
     }
 }
