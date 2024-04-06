@@ -296,37 +296,34 @@ namespace WebXemPhim.Services.Implements
             DataResponsesToken response = GenerateAccessToken(user);
             string accessToken = response.AccessToken;
             string url = Global.DomainName + "api/User/Authentication/reset-password/token/" + accessToken + "/email/" + user.Email+"/code/"+cfc;
-            string form = $@"<div style='text-align:center'>
-                        <h2 style='color: #3b4151;
-                                    font-family: sans-serif;
-                                    font-size: 36px;
-                                    margin: 0'> Forgot Password </h2>
-                        <h3 style='color: #3b4151;
-                                    font-family: sans-serif;
-                                    font-size: 24px;
-                                    margin: 0'> Click The Button Below To Confirm Password Change</h3>
-                        <form method='get' action='{url}' style='display: inline;'>
-                            <button type='submit' style='display:block;
-                                                        margin-top:50px;
-                                                        margin-left:520px;
-                                                        text-align:center;
-                                                        font-weight:700;
-                                                        background-color:#4990e2;
-                                                        box-shadow: 0 1px 2px rgba(0,0,0,.1);
-                                                        border-color: #4990e2;
-                                                        font-size:14px;
-                                                        line-height: 1.15;
-                                                        border-radius:4px;
-                                                        color:#ffffff;
-                                                        font-family: sans-serif;
-                                                        cursor:pointer;
-                                                        width:30%;
-                                                        transition: all .3s;
-                                                        padding:8px 40px;'>
-                                Confirm Email
-                            </button>
-                        </form>
-                    </div>";
+            string form = $@"<div style=""text-align: center;"">
+                            <h2 style=""color: #3b4151;
+                                       font-family: sans-serif;
+                                       font-size: 36px;
+                                       margin: 0;"">Forgot Password</h2>
+                            <h3 style=""color: #3b4151;
+                                       font-family: sans-serif;
+                                       font-size: 24px;
+                                       margin: 0;"">Click The Button Below To Confirm Password Change</h3>
+                            <form method=""get"" action=""{url}"" style=""display: inline;"">
+                                <button type=""submit"" style=""text-align: center;
+                                                             font-weight: 700;
+                                                             background-color: #4990e2;
+                                                             box-shadow: 0 1px 2px rgba(0,0,0,.1);
+                                                             border-color: #4990e2;
+                                                             font-size: 14px;
+                                                             line-height: 1.15;
+                                                             border-radius: 4px;
+                                                             color: #ffffff;
+                                                             font-family: sans-serif;
+                                                             cursor: pointer;
+                                                             transition: all .3s;
+                                                             padding: 8px 40px;"">
+                                    Confirm Email
+                                </button>
+                            </form>
+                        </div>
+                        ";
 
             return form;
         }
