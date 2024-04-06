@@ -24,6 +24,15 @@ using Microsoft.AspNetCore.Components.Forms;
 using System.Security.Cryptography;
 using System.Net.WebSockets;
 using Microsoft.Identity.Client;
+using WebXemPhim.Handle.ForgotPassWord;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Http;
+using WebXemPhim.Handle.Global;
+using Newtonsoft.Json.Linq;
+using System.Web;
 
 namespace WebXemPhim.Services.Implements
 {
@@ -50,19 +59,20 @@ namespace WebXemPhim.Services.Implements
             string code = new string(Enumerable.Repeat(character, 6).Select(s => s[rd.Next(s.Length)]).ToArray());
             return code;
         }
+        
+
         public string SendMail(SendEmail e)
         {
-            var mail = "anphu0220@gmail.com";
-            var password = "ltevkzyodqwisktm";
+            var mail = "nguyenaabbcczz@gmail.com";
+            var password = "hlsvlhxqmwcsmgtp";
 
             if (!ValidateEmail.IsValidEmail(e.Email))
             {
                 return "Định Dạng Email Không Đúng";
             }
 
-            var smtpClient = new SmtpClient("smtp.gmail.com")
+            var smtpClient = new SmtpClient("smtp.gmail.com",587)
             {
-                Port=587,
                 EnableSsl = true,
                 Credentials = new NetworkCredential(mail, password),
             };
@@ -77,7 +87,7 @@ namespace WebXemPhim.Services.Implements
                     IsBodyHtml = true
                 });
 
-                return "Gửi Mã Về Mail Thành Công, Nhập Mã Để Xác Thực!";
+                return "Gửi Mã Về Mail Thành Công!!!";
             }
             catch (Exception ex)
             {
@@ -94,7 +104,7 @@ namespace WebXemPhim.Services.Implements
             {
                 return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Thông Tin Cần Nhập Đầy Đủ", null);
             }
-            if(_appDbContext.Users.Any(x => x.Email.Equals(requests.Email)))
+            if (_appDbContext.Users.Any(x => x.Email.Equals(requests.Email)))
             {
                 return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Email Này Đã Tồn Tại", null);
             }
@@ -167,11 +177,10 @@ namespace WebXemPhim.Services.Implements
             user.IsActive = true;
             _appDbContext.ConfirmEmails.Remove(confirmEmail);
             _appDbContext.Users.Update(user);
-            _appDbContext.SaveChangesAsync();
+            _appDbContext.SaveChanges();
             DataResponsesUser result = _converter.ConvertDt(user);
             return _responseObject.ResponseSucess("Xác Thực Tài Khoản Thành Công!", result);
         }
-
         private string GenerateRefreshToken()
         {
             var random = new byte[64];
@@ -192,7 +201,7 @@ namespace WebXemPhim.Services.Implements
                 Subject = new System.Security.Claims.ClaimsIdentity(
                 new[]
                 {
-                    new Claim("Id",user.Id.ToString()),
+                    new Claim("UserId",user.Id.ToString()),
                     new Claim("Email",user.Email),
                     new Claim("Name",user.Name),
                     new Claim(ClaimTypes.Role,role?.Code ?? ""),
@@ -267,5 +276,112 @@ namespace WebXemPhim.Services.Implements
             var result = _appDbContext.Users.Select(x => _converter.ConvertDt(x));
             return result;
         }
+
+        public ResponseObject<DataResponsesUser> ChangeYourPassword(int usid, Requests_ChangePass requests)
+        {
+            var user = _appDbContext.Users.SingleOrDefault(x => x.Id == usid);
+            if(!requests.NewPassword.Equals(requests.ConfirmPassword))
+            {
+                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Mật khẩu không trùng nhau!", null);
+            }
+            user.Password = BCryptpw.HashPassword(requests.NewPassword);
+            _appDbContext.Users.Update(user);
+            _appDbContext.SaveChanges();
+            return _responseObject.ResponseSucess("Đổi Mật Khẩu Thành Công!!!", _converter.ConvertDt(user));
+        }
+  
+
+        private string LinkActive(User user,string cfc)
+        {
+            DataResponsesToken response = GenerateAccessToken(user);
+            string accessToken = response.AccessToken;
+            string url = Global.DomainName + "api/User/Authentication/reset-password/token/" + accessToken + "/email/" + user.Email+"/code/"+cfc;
+            string form = $@"<div style='text-align:center'>
+                        <h2 style='color: #3b4151;
+                                    font-family: sans-serif;
+                                    font-size: 36px;
+                                    margin: 0'> Forgot Password </h2>
+                        <h3 style='color: #3b4151;
+                                    font-family: sans-serif;
+                                    font-size: 24px;
+                                    margin: 0'> Click The Button Below To Confirm Password Change</h3>
+                        <form method='get' action='{url}' style='display: inline;'>
+                            <button type='submit' style='display:block;
+                                                        margin-top:50px;
+                                                        margin-left:520px;
+                                                        text-align:center;
+                                                        font-weight:700;
+                                                        background-color:#4990e2;
+                                                        box-shadow: 0 1px 2px rgba(0,0,0,.1);
+                                                        border-color: #4990e2;
+                                                        font-size:14px;
+                                                        line-height: 1.15;
+                                                        border-radius:4px;
+                                                        color:#ffffff;
+                                                        font-family: sans-serif;
+                                                        cursor:pointer;
+                                                        width:30%;
+                                                        transition: all .3s;
+                                                        padding:8px 40px;'>
+                                Confirm Email
+                            </button>
+                        </form>
+                    </div>";
+
+            return form;
+        }
+
+        public ResponseObject<DataResponsesUser> ConfirmEmailLink(Requests_RsPass requests)
+        {
+            if (string.IsNullOrEmpty(requests.Email))
+            {
+                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Thông Tin Cần Nhập Đầy Đủ", null);
+            }
+            var user = _appDbContext.Users.FirstOrDefault(x => x.Email.Equals(requests.Email));
+            if (user is null)
+            {
+                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Email Này Không Tồn Tại", null);
+            }
+            ConfirmEmail confirmEmail = new ConfirmEmail();
+            confirmEmail.UserId = user.Id;
+            confirmEmail.ExpiredTime = DateTime.UtcNow.AddMinutes(30);
+            confirmEmail.ConfirmCode = RandomActiveCode();
+            string cfc = confirmEmail.ConfirmCode;
+            confirmEmail.IsConfirm = false;
+            _appDbContext.ConfirmEmails.Add(confirmEmail);
+            _appDbContext.SaveChanges();
+            string message = SendMail(new SendEmail
+            {
+                Email = requests.Email,
+                Title = "QUÊN MẬT KHẨU: Hiệu Lực 30 Phút",
+                Body = LinkActive(user, cfc),
+            });
+            DataResponsesUser result = _converter.ConvertDt(user);
+            return _responseObject.ResponseSucess("Đã Gửi Link Qua Mail ! Hãy Kiểm Tra Mail ", result);
+
+        }
+       
+        public ResponseObject<DataResponsesUser> ResetPasswordconfirmlink(string code ,Requests_ChangePass requests1)
+        {
+            ConfirmEmail cfe = _appDbContext.ConfirmEmails.Where(x => x.ConfirmCode.Equals(code)).FirstOrDefault();
+            if (cfe == null) { return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Cần Phải nhấn vào link ở email!!", null); }
+            if (cfe.ExpiredTime < DateTime.UtcNow)
+            {
+                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Link Đã Hết Thời Hạn!!", null);
+            }
+            User user = _appDbContext.Users.FirstOrDefault(x => x.Id == cfe.UserId);
+            if (requests1.NewPassword != requests1.ConfirmPassword)
+            {
+                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Mật Khẩu Không Trùng Nhau!!", null);
+            }
+            var confirmEmailsToDelete = _appDbContext.ConfirmEmails.Where(x => x.UserId == user.Id);
+            _appDbContext.ConfirmEmails.RemoveRange(confirmEmailsToDelete);
+            user.Password = BCryptpw.HashPassword(requests1.NewPassword);
+            _appDbContext.Users.Update(user);
+            _appDbContext.SaveChanges();
+            DataResponsesUser result = _converter.ConvertDt(user);
+            return _responseObject.ResponseSucess("Cập Nhập Lại Mật Khẩu Thành Công!", result);
+        }
+
     }
 }
