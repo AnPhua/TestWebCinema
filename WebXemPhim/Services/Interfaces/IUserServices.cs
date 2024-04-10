@@ -11,7 +11,7 @@ namespace WebXemPhim.Services.Interfaces
         ResponseObject<DataResponsesUser> Register(Requests_Register requests);
         ResponseObject<DataResponsesUser> ConfirmNewAcc(Requests_ConfirmEmail requests);
         DataResponsesToken GenerateAccessToken(User user);
-        DataResponsesToken RestartAccessToKen(Requests_RestartToken requests);
+        ResponseObject<DataResponsesToken> RestartAccessToKen(Requests_RestartToken requests);
 
         ResponseObject<DataResponsesUser> ConfirmEmailLink(Requests_RsPass requests);
         ResponseObject<DataResponsesUser> ResetPasswordconfirmlink(string code, Requests_ChangePass requests1);

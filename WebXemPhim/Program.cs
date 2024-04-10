@@ -83,11 +83,11 @@ public class Program
             app.UseSwaggerUI();
         }
         app.UseRouting();
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapRazorPages();
-            endpoints.MapControllers();
-        });
+        //app.UseEndpoints(endpoints =>
+        //{
+        //    endpoints.MapRazorPages();
+        //    endpoints.MapControllers();
+        //});
         app.UseHttpsRedirection();
 
         app.UseAuthentication();

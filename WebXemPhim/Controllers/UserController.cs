@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using Microsoft.Identity.Client;
 using Newtonsoft.Json.Linq;
 using System;
@@ -35,6 +36,11 @@ namespace WebXemPhim.Controllers
         public IActionResult ConfirmNewAcc([FromBody]Requests_ConfirmEmail requests)
         {
             return Ok(_userServices.ConfirmNewAcc(requests));
+        }
+        [HttpPost("renewAccessToken")]
+        public IActionResult RenewAccessToken([FromBody]Requests_RestartToken request)
+        {
+            return Ok(_userServices.RestartAccessToKen(request));
         }
         [HttpPost("login")]
         public IActionResult LoginaAcc([FromBody]Requests_Login requests)
@@ -110,13 +116,24 @@ namespace WebXemPhim.Controllers
             var results = _userServices.GetAllInfomation(); 
             return Ok(results); 
         }
-        //[HttpPut("changepassword")] // check đăng nhập
-        //[Authorize(AuthenticationSchemes =JwtBearerDefaults.AuthenticationScheme)]
-        //public IActionResult ChangePassword([FromForm]Requests_ChangePass requests)
-        //{
-        //    int id = int.Parse(HttpContext.User.FindFirst("UserId").Value);
-        //    return Ok(_userServices.ChangeYourPassword(id, requests));
-        //}
+        [HttpPut]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public IActionResult ChangePassword([FromForm] Requests_ChangePass requests)
+        {
+            var userClaim = HttpContext.User.FindFirst("UserId");
+            if (userClaim == null)
+            {
+                return BadRequest("Không tìm thấy token !!.");
+            }
+            int id;
+            string str = userClaim.Value;
+            bool parseResult = int.TryParse(str, out id);
+            if (!parseResult)
+            {
+                return BadRequest("Id không tồn tại!!.");
+            }
+            return Ok(_userServices.ChangeYourPassword(id, requests));
+        }
 
     }
 }

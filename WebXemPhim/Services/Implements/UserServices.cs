@@ -229,9 +229,50 @@ namespace WebXemPhim.Services.Implements
             return result;
         }
 
-        public DataResponsesToken RestartAccessToKen(Requests_RestartToken requests)
+        public ResponseObject<DataResponsesToken> RestartAccessToKen(Requests_RestartToken requests)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var jwtTokenHandler = new JwtSecurityTokenHandler();
+                var secretKey = _configuration.GetSection("AppSettings:SecretKey").Value;
+
+                var tokenValidation = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    ValidateAudience = false,
+                    ValidateIssuer = false,
+                    IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(secretKey))
+                };
+                var tokenAuthentication = jwtTokenHandler.ValidateToken(requests.AccessToken, tokenValidation, out var validatedToken);
+                if (!(validatedToken is JwtSecurityToken jwtSecurityToken) || jwtSecurityToken.Header.Alg != SecurityAlgorithms.HmacSha256)
+                {
+                    return _responseTokenObject.ResponseFail(StatusCodes.Status400BadRequest, "Token không hợp lệ", null);
+                }
+                var refreshToken = _appDbContext.RefreshTokens.SingleOrDefault(x => x.Token.Equals(requests.RefreshToKen));
+                if (refreshToken == null)
+                {
+                    return _responseTokenObject.ResponseFail(StatusCodes.Status404NotFound, "RefreshToken không tồn tại trong database", null);
+                }
+                if (refreshToken.ExpiredTime < DateTime.UtcNow)
+                {
+                    return _responseTokenObject.ResponseFail(StatusCodes.Status401Unauthorized, "RefreshToken đã hết hạn", null);
+                }
+                var user = _appDbContext.Users.SingleOrDefault(x => x.Id == refreshToken.UserId);
+                if (user is null)
+                {
+                    return _responseTokenObject.ResponseFail(StatusCodes.Status404NotFound, "Người dùng không tồn tại", null);
+                }
+                var newToken = GenerateAccessToken(user);
+                return _responseTokenObject.ResponseSucess("Token đã được làm mới thành công", newToken);
+            }
+            catch (SecurityTokenValidationException ex)
+            {
+                return _responseTokenObject.ResponseFail(StatusCodes.Status400BadRequest, "Lỗi xác thực token: " + ex.Message, null);
+            }
+            catch (Exception ex)
+            {
+                return _responseTokenObject.ResponseFail(StatusCodes.Status500InternalServerError, "Lỗi không xác định: " + ex.Message, null);
+            }
         }
 
         public ResponseObject<DataResponsesToken> LoginAcc(Requests_Login requests)
