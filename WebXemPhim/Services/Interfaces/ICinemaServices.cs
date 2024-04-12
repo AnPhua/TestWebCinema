@@ -9,5 +9,6 @@ namespace WebXemPhim.Services.Interfaces
 
         ResponseObject<DataResponsesCinema> CreateCinema(Requests_CreateCinema requests);
         ResponseObject<DataResponsesCinema> UpdateCinema(Requests_UpdateCinema requests);
+        string DeleteCinema(int cinemaId);
     }
 }

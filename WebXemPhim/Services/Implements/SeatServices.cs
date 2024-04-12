@@ -10,7 +10,7 @@ namespace WebXemPhim.Services.Implements
 {
     public class SeatServices:BaseServices,ISeatServices
     {
-        public  readonly ResponseObject<DataResponsesRoom> responseObject;
+        private  readonly ResponseObject<DataResponsesRoom> responseObject;
         private readonly SeatConverter _seatConverter;
         private readonly RoomConverter _roomConverter;
         private readonly ResponseObject<DataResponsesSeat> _responseObject;
@@ -90,6 +90,16 @@ namespace WebXemPhim.Services.Implements
 
              _appDbContext.SaveChanges();
             return responseObject.ResponseSucess("Cập nhật thông tin ghế trong phòng thành công", _roomConverter.ConvertDt(room));
+        }
+
+        public string DeleteSeat(int seatId)
+        {
+            var seatdelete = _appDbContext.Seats.SingleOrDefault(s => s.Id == seatId);
+            if (seatdelete is null) { return "Không Tìm Thấy Id Ghế!"; }
+            seatdelete.IsActive = false;
+            _appDbContext.Seats.Update(seatdelete);
+            _appDbContext.SaveChanges();
+            return "Xóa Ghế Thành Công!";
         }
     }
 }

@@ -81,3 +81,4 @@ D:\APIProgramming\WebXemPhim\WebXemPhim\bin\Debug\net7.0\Newtonsoft.Json.dll
 D:\APIProgramming\WebXemPhim\WebXemPhim\bin\Debug\net7.0\Scrutor.dll
 D:\APIProgramming\WebXemPhim\WebXemPhim\bin\Debug\net7.0\Swashbuckle.AspNetCore.Filters.dll
 D:\APIProgramming\WebXemPhim\WebXemPhim\bin\Debug\net7.0\Swashbuckle.AspNetCore.Filters.Abstractions.dll
+D:\APIProgramming\WebXemPhim\WebXemPhim\bin\Debug\net7.0\CloudinaryDotNet.dll

@@ -1,0 +1,19 @@
+﻿using WebXemPhim.Payloads.DataResponses;
+using WebXemPhim.Payloads.Responses;
+using WebXemPhim.Payloads.DataRequests;
+
+namespace WebXemPhim.Services.Interfaces
+{
+    public interface IMovieServices
+    {
+        Task<ResponseObject<DataResponsesMovie>> CreateMovie(Requests_CreateMovie requests);
+        Task<ResponseObject<DataResponsesMovie>> UpdateMovie(Requests_UpdateMovie requests);
+        string DeleteMovie(int movieId);
+        ResponseObject<DataResponsesRate> CreateRate(Requests_CreateRate requests);
+        ResponseObject<DataResponsesRate> UpdateRate(Requests_UpdateRate requests);
+        string DeleteRate(int rateId);
+        ResponseObject<DataResponsesMovieType> CreateMovieType(Requests_CreateMovieType requests);
+        ResponseObject<DataResponsesMovieType> UpdateMovieType(Requests_UpdateMovieType requests);
+        string DeleteMovieType(int movieTypeId);
+    }
+}

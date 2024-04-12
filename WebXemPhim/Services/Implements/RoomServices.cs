@@ -77,6 +77,16 @@ namespace WebXemPhim.Services.Implements
             return _responseRoom.ResponseSucess("Thêm ghế thành công", _roomConverter.ConvertDt(room));
         }
 
+        public string DeleteRoom(int roomId)
+        {
+            var roomdelete = _appDbContext.Rooms.SingleOrDefault(r => r.Id == roomId);
+            if(roomdelete is null) { return "Không Tìm Thấy Id Phòng!"; }
+            roomdelete.IsActive = false;
+            _appDbContext.Rooms.Update(roomdelete);
+            _appDbContext.SaveChanges();
+            return "Xóa Phòng Thành Công!";
+        }
+
         public ResponseObject<DataResponsesRoom> UpdateRoom(Requests_UpdateRoom requests)
         {
             var room =  _appDbContext.Rooms.Include(x => x.Seats).AsNoTracking().SingleOrDefault(x => x.Id == requests.roomId);

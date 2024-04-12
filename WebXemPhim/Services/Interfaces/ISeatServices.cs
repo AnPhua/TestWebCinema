@@ -11,5 +11,6 @@ namespace WebXemPhim.Services.Interfaces
         List<Seat> CreateListSeat(int roomId, List<Requests_CreateSeat> requests);
 
         ResponseObject<DataResponsesRoom> UpdateSeat(int roomId, List<Requests_UpdateSeats> requests);
+        public string DeleteSeat(int seatId);
     }
 }

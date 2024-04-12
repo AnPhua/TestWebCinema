@@ -10,5 +10,7 @@ namespace WebXemPhim.Services.Interfaces
         ResponseObject<DataResponsesRoom> CreateRoom(int cinemaId, Requests_CreateRoom requests);
         List<Room> CreateListRoom(int cinemaId, List<Requests_CreateRoom> requests);
         ResponseObject<DataResponsesRoom> UpdateRoom(Requests_UpdateRoom requests);
+
+        string DeleteRoom(int roomId);
     }
 }

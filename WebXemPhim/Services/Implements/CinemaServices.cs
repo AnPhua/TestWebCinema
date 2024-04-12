@@ -65,6 +65,16 @@ namespace WebXemPhim.Services.Implements
             _appDbContext.SaveChanges();
             return responsescinema.ResponseSucess("Cập Nhật Thông Tin Phim Thành Công!", cinemaConverter.ConvertDt(updatecinema));
         }
+
+        public string DeleteCinema(int cinemaId)
+        {
+            var cinemadelete = _appDbContext.Cinemas.SingleOrDefault(x => x.Id == cinemaId);
+            if (cinemadelete is null) { return "Không Tìm Thấy Id Cinema!"; }
+            cinemadelete.IsActive = false;
+            _appDbContext.Cinemas.Update(cinemadelete);
+            _appDbContext.SaveChanges();
+            return "Xóa rạp thành công";
+        }
     }
 
 }
