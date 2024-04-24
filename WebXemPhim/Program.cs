@@ -18,7 +18,11 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Text; // Encoding
 using WebXemPhim.Handle.Global;
-
+using WebXemPhim.Payloads.DataResponses;
+using WebXemPhim.Payloads.Responses;
+using WebXemPhim.Payloads.Converters;
+using MovieManagement.Services.Implements;
+using MovieManagement.Services.Interfaces;
 
 public class Program
 {
@@ -34,11 +38,61 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
-        builder.Services.AddScoped<IUserServices, UserServices>();
+        builder.Services.AddScoped<IAuthServices, AuthServices>();
+        builder.Services.AddScoped<ICinemaServices, CinemaServices>();
+        builder.Services.AddScoped<ISeatServices, SeatServices>();
+        builder.Services.AddScoped<ITicketServices, TicketServices>();
+        builder.Services.AddScoped<IScheduleServices, ScheduleServices>();
+        builder.Services.AddScoped<IBannerServices, BannerServices>();
+        builder.Services.AddScoped<IRoomServices, RoomServices>();
+        builder.Services.AddScoped<IFoodServices, FoodServices>();
+        builder.Services.AddScoped<IPromotionServices, PromotionServices>();
+        builder.Services.AddScoped<IRankCustomerServices, RankCustomerServices>();
+        builder.Services.AddScoped<IMovieServices, MovieServices>();
+        builder.Services.AddScoped<IVNPayServices, VNPayServices>();
+        builder.Services.AddScoped<IBillServices, BillServices>();
+
+        builder.Services.AddSingleton<ResponseObject<DataResponsesUser>>();
+        builder.Services.AddSingleton<ResponseObject<DataResponsesToken>>();
+        builder.Services.AddSingleton<ResponseObject<DataResponsesMovieType>>();
+        builder.Services.AddSingleton<ResponseObject<DataResponsesCinema>>();
+        builder.Services.AddSingleton<ResponseObject<DataResponsesMovie>>();
+        builder.Services.AddSingleton<ResponseObject<DataResponsesRoom>>();
+        builder.Services.AddSingleton<ResponseObject<DataResponsesFood>>();
+        builder.Services.AddSingleton<ResponseObject<DataResponsesBanner>>();
+        builder.Services.AddSingleton<ResponseObject<DataRepsonsesPromotion>>();
+        builder.Services.AddSingleton<ResponseObject<DataResponsesRankCustomer>>();
+        builder.Services.AddSingleton<ResponseObject<DataResponsesMovie>>();
+        builder.Services.AddSingleton<ResponseObject<DataResponsesCinema>>();
+        builder.Services.AddSingleton<ResponseObject<DataResponsesSeat>>();
+        builder.Services.AddSingleton<ResponseObject<DataResponsesTicket>>();
+        builder.Services.AddSingleton<ResponseObject<DataResponsesSchedule>>();
+        builder.Services.AddSingleton<ResponseObject<DataResponsesBill>>();
+        builder.Services.AddSingleton<ResponseObject<DataResponsesBillFood>>();
+        builder.Services.AddSingleton<ResponseObject<DataResponsesBillTicket>>();
+
+        builder.Services.AddScoped<AuthServices>();
+
+
+        builder.Services.AddSingleton<UserConverter>();
+        builder.Services.AddSingleton<TicketConverter>();
+        builder.Services.AddSingleton<SeatConverter>();
+        builder.Services.AddSingleton<SchedulesConverter>();
+        builder.Services.AddSingleton<RoomConverter>();
+        builder.Services.AddSingleton<RankCustomerConverter>();
+        builder.Services.AddSingleton<BannerConverter>();
+        builder.Services.AddSingleton<PromotionConverter>();
+        builder.Services.AddSingleton<MovieTypeConverter>();
+        builder.Services.AddSingleton<MovieConverter>();
+        builder.Services.AddSingleton<CinemaConverter>();
+        builder.Services.AddSingleton<FoodConverter>();
+        builder.Services.AddSingleton<BillConverter>();
+        builder.Services.AddSingleton<BillTicketConverter>();
+        builder.Services.AddSingleton<BillFoodConverter>();
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddControllers();
         builder.Services.AddRazorPages();
-        builder.Services.AddScoped<UserServices>();
+        builder.Services.AddScoped<AuthServices>();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(x =>

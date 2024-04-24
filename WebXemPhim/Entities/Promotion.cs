@@ -4,7 +4,7 @@
     {
         public int Percent { get; set; }
         public int Quantity { get; set; }
-        public string Type { get; set; }
+        public int Type { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public string Description { get; set; }

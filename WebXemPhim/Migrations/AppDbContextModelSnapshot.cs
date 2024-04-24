@@ -67,7 +67,7 @@ namespace WebXemPhim.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("PromotionId")
+                    b.Property<int?>("PromotionId")
                         .HasColumnType("int");
 
                     b.Property<double?>("TotalMoney")
@@ -401,9 +401,8 @@ namespace WebXemPhim.Migrations
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -788,9 +787,7 @@ namespace WebXemPhim.Migrations
 
                     b.HasOne("WebXemPhim.Entities.Promotion", "Promotion")
                         .WithMany("Bill")
-                        .HasForeignKey("PromotionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PromotionId");
 
                     b.Navigation("BillStatus");
 

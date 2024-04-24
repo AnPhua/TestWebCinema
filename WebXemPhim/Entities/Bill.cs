@@ -11,7 +11,7 @@ namespace WebXemPhim.Entities
         public int CustomerId { get; set; }
         public string Name { get; set; }
         public DateTime UpdateTime { get; set; }
-        public int PromotionId { get; set; }
+        public int? PromotionId { get; set; }
         public int BillStatusId { get; set; }
         public bool? IsActive { get; set; } = true;
 

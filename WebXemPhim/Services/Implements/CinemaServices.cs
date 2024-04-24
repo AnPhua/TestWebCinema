@@ -6,6 +6,7 @@ using WebXemPhim.Payloads.Responses;
 using WebXemPhim.Payloads.Converters;
 using WebXemPhim.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using WebXemPhim.Handle.HandlePagination;
 
 namespace WebXemPhim.Services.Implements
 {
@@ -13,11 +14,14 @@ namespace WebXemPhim.Services.Implements
     {
         private readonly ResponseObject<DataResponsesCinema> responsescinema;
         private readonly CinemaConverter cinemaConverter;
+        private readonly RoomConverter _roomConverter;
         private readonly IRoomServices _iRoomServices;
         public CinemaServices(IRoomServices iRoomServices)
         {
             responsescinema = new ResponseObject<DataResponsesCinema>();
             _iRoomServices = iRoomServices;
+            _roomConverter = new RoomConverter();
+            cinemaConverter = new CinemaConverter();
         }
         public ResponseObject<DataResponsesCinema> CreateCinema(Requests_CreateCinema requests)
         {
@@ -75,6 +79,60 @@ namespace WebXemPhim.Services.Implements
             _appDbContext.SaveChanges();
             return "Xóa rạp thành công";
         }
+
+        public async Task<PageResult<DataResponsesCinema>> GetCinemaByMovie(int movieId, int pageSize, int pageNumber)
+        {
+            var movie = await _appDbContext.Movies.Include(x => x.Schedules).SingleOrDefaultAsync(x => x.Id == movieId);
+            if (movie == null)
+            {
+                throw new ArgumentNullException("Phim không tồn tại!!");
+            }
+
+            var schedules = await _appDbContext.Schedules.Include(x => x.Room)
+                                                    .ThenInclude(r => r.Cinema)
+                                                    .Where(x => x.MovieId == movieId)
+                                                    .ToListAsync();
+
+            var groupedByCinema = schedules.GroupBy(s => s.Room.CinemaId);
+
+            var cinemas = new List<DataResponsesCinema>();
+
+            foreach (var group in groupedByCinema)
+            {
+                var firstSchedule = group.First();
+                var cinema = firstSchedule.Room.Cinema;
+                var cinemaDTO = new DataResponsesCinema
+                {
+                    NameOfCinema = cinema.NameOfCinema,
+                    Address = cinema.Address,
+                    Description = cinema.Description,
+                    Room = group.Select(s => _roomConverter.ConvertDt(s.Room)).AsQueryable(),
+                    Id = firstSchedule.Id,
+                };
+
+                cinemas.Add(cinemaDTO);
+            }
+
+            var result = Pagination.GetPagedData(cinemas.AsQueryable(), pageSize, pageNumber);
+            return result;
+        }
+
+
+        public async Task<PageResult<DataResponsesCinema>> GetListCinema(int pageSize, int pageNumber)
+        {
+            var query = _appDbContext.Cinemas.Include(x => x.Room).Select(x => cinemaConverter.ConvertDt(x));
+            var result = Pagination.GetPagedData(query, pageSize, pageNumber);
+            return result;
+        }
+
+        public async Task<PageResult<DataResponsesRoom>> GetListRoomInCinema(int pageSize, int pageNumber)
+        {
+            var query = _appDbContext.Rooms.Include(x => x.Cinema).Include(x => x.Seats).Include(x => x.Schedules).AsNoTracking().Select(x => _roomConverter.ConvertDt(x));
+            var result = Pagination.GetPagedData(query, pageSize, pageNumber);
+            return result;
+        }
+
+   
     }
 
 }

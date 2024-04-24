@@ -53,6 +53,10 @@
               "target": "Package",
               "version": "[1.26.2, )"
             },
+            "FluentEmail.Core": {
+              "target": "Package",
+              "version": "[3.0.2, )"
+            },
             "JWT": {
               "target": "Package",
               "version": "[10.1.1, )"

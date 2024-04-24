@@ -9,34 +9,19 @@ using WebXemPhim.Payloads.DataResponses;
 using WebXemPhim.Payloads.Responses;
 using WebXemPhim.Services.Interfaces;
 using BCryptpw = BCrypt.Net.BCrypt;
-using System;
-using System.ComponentModel.DataAnnotations;
 using System.Net.Mail;
 using System.Net;
-using Azure.Core;
 using Microsoft.EntityFrameworkCore;
-using System.Drawing;
 using System.IdentityModel.Tokens.Jwt;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Components.Forms;
 using System.Security.Cryptography;
-using System.Net.WebSockets;
-using Microsoft.Identity.Client;
-using WebXemPhim.Handle.ForgotPassWord;
-using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Http;
 using WebXemPhim.Handle.Global;
-using Newtonsoft.Json.Linq;
-using System.Web;
+using WebXemPhim.Handle.HandlePagination;
 
 namespace WebXemPhim.Services.Implements
 {
-    public class UserServices : BaseServices , IUserServices
+    public class AuthServices : BaseServices , IAuthServices
     {
         
         private readonly ResponseObject<DataResponsesUser> _responseObject;
@@ -44,7 +29,7 @@ namespace WebXemPhim.Services.Implements
         private readonly IConfiguration _configuration;
         private readonly ResponseObject<DataResponsesToken> _responseTokenObject;
         private readonly IHttpContextAccessor _contextAccessor;
-        public UserServices(IConfiguration configuration,IHttpContextAccessor httpContextAccessor)
+        public AuthServices(IConfiguration configuration,IHttpContextAccessor httpContextAccessor)
         {
             _converter = new UserConverter();
             _responseObject = new ResponseObject<DataResponsesUser>();
@@ -60,7 +45,6 @@ namespace WebXemPhim.Services.Implements
             return code;
         }
         
-
         public string SendMail(SendEmail e)
         {
             var mail = "nguyenaabbcczz@gmail.com";
@@ -94,7 +78,7 @@ namespace WebXemPhim.Services.Implements
                 return "Lỗi Email: " + ex.Message;
             }
         }
-        public ResponseObject<DataResponsesUser> Register(Requests_Register requests)
+        public async Task<ResponseObject<DataResponsesUser>> Register(Requests_Register requests)
         {
             if (string.IsNullOrEmpty(requests.Username) ||
                 string.IsNullOrEmpty(requests.Email) ||
@@ -128,7 +112,7 @@ namespace WebXemPhim.Services.Implements
             {
                 return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Định Dạng Name không đúng", null);
             }
-            var user = new User();
+            User user = new User();
             user.Email = requests.Email;
             user.Name = requests.Name;
             user.PhoneNumber = requests.PhoneNumber;
@@ -138,15 +122,15 @@ namespace WebXemPhim.Services.Implements
             user.RoleId = 3;
             user.UserStatusId = 1;
             user.Point = 0;
-            _appDbContext.Users.Add(user);
-            _appDbContext.SaveChanges();
+            await _appDbContext.Users.AddAsync(user);
+            await _appDbContext.SaveChangesAsync();
             ConfirmEmail confirmEmail = new ConfirmEmail();
             confirmEmail.UserId = user.Id;
             confirmEmail.ExpiredTime = DateTime.UtcNow.AddMinutes(30);
             confirmEmail.ConfirmCode = RandomActiveCode();
             confirmEmail.IsConfirm = false;
-            _appDbContext.ConfirmEmails.Add(confirmEmail);
-            _appDbContext.SaveChanges();
+            await _appDbContext.ConfirmEmails.AddAsync(confirmEmail);
+            await _appDbContext.SaveChangesAsync();
             DataResponsesUser result = _converter.ConvertDt(user);
             string message = SendMail(new SendEmail
             {
@@ -157,7 +141,7 @@ namespace WebXemPhim.Services.Implements
             return _responseObject.ResponseSucess("Đăng Ký Tài Khoản Thành Công!Hãy Kiểm Tra Mail Để Xác Thực Tài Khoản" , result);    
 
         }
-        public ResponseObject<DataResponsesUser> ConfirmNewAcc(Requests_ConfirmEmail requests)
+        public async Task<ResponseObject<DataResponsesUser>> ConfirmNewAcc(Requests_ConfirmEmail requests)
         {
             ConfirmEmail confirmEmail = _appDbContext.ConfirmEmails.Where(x => x.ConfirmCode.Equals(requests.ConfirmCode)).SingleOrDefault();
             if (confirmEmail == null)
@@ -172,16 +156,16 @@ namespace WebXemPhim.Services.Implements
                 _appDbContext.SaveChanges();
                 return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Mã Xác Thực Hết Hiệu Lực ! Hãy Đăng Kí Lại Tài Khoản (T.T)", null);
             }
-            User user = _appDbContext.Users.FirstOrDefault(x => x.Id == confirmEmail.UserId);
+            User user = await _appDbContext.Users.FirstOrDefaultAsync(x => x.Id == confirmEmail.UserId);
             user.UserStatusId = 2;
             user.IsActive = true;
             _appDbContext.ConfirmEmails.Remove(confirmEmail);
             _appDbContext.Users.Update(user);
-            _appDbContext.SaveChanges();
+            await _appDbContext.SaveChangesAsync();
             DataResponsesUser result = _converter.ConvertDt(user);
             return _responseObject.ResponseSucess("Xác Thực Tài Khoản Thành Công!", result);
         }
-        private string GenerateRefreshToken()
+        public string GenerateRefreshToken()
         {
             var random = new byte[64];
             using(var item = RandomNumberGenerator.Create())
@@ -275,9 +259,9 @@ namespace WebXemPhim.Services.Implements
             }
         }
 
-        public ResponseObject<DataResponsesToken> LoginAcc(Requests_Login requests)
+        public async Task<ResponseObject<DataResponsesToken>> LoginAcc(Requests_Login requests)
         {
-            var user = _appDbContext.Users.SingleOrDefault(x => x.Username.Equals(requests.UserName));
+            var user = await _appDbContext.Users.SingleOrDefaultAsync(x => x.Username.Equals(requests.UserName));
             bool checkPass = BCryptpw.Verify(requests.Password, user.Password);
             if (string.IsNullOrEmpty(requests.UserName)||
                string.IsNullOrEmpty(requests.Password))
@@ -318,25 +302,25 @@ namespace WebXemPhim.Services.Implements
             return result;
         }
 
-        public ResponseObject<DataResponsesUser> ChangeYourPassword(int usid, Requests_ChangePass requests)
+        public async Task<ResponseObject<DataResponsesUser>> ChangeYourPassword(int usid, Requests_ChangePass requests)
         {
-            var user = _appDbContext.Users.SingleOrDefault(x => x.Id == usid);
+            var user = await _appDbContext.Users.SingleOrDefaultAsync(x => x.Id == usid);
             if(!requests.NewPassword.Equals(requests.ConfirmPassword))
             {
                 return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Mật khẩu không trùng nhau!", null);
             }
             user.Password = BCryptpw.HashPassword(requests.NewPassword);
             _appDbContext.Users.Update(user);
-            _appDbContext.SaveChanges();
+            await _appDbContext.SaveChangesAsync();
             return _responseObject.ResponseSucess("Đổi Mật Khẩu Thành Công!!!", _converter.ConvertDt(user));
         }
-  
+ 
 
         private string LinkActive(User user,string cfc)
         {
             DataResponsesToken response = GenerateAccessToken(user);
             string accessToken = response.AccessToken;
-            string url = Global.DomainName + "api/User/Authentication/reset-password/token/" + accessToken + "/email/" + user.Email+"/code/"+cfc;
+            string url = Global.DomainName + "api/auth/authentication/reset-password/token/" + accessToken + "/email/" + user.Email+"/code/"+cfc;
             string form = $@"<div style=""text-align: center;"">
                             <h2 style=""color: #3b4151;
                                        font-family: sans-serif;
@@ -369,7 +353,7 @@ namespace WebXemPhim.Services.Implements
             return form;
         }
 
-        public ResponseObject<DataResponsesUser> ConfirmEmailLink(Requests_RsPass requests)
+        public async Task<ResponseObject<DataResponsesUser>> ConfirmEmailLink(Requests_RsPass requests)
         {
             if (string.IsNullOrEmpty(requests.Email))
             {
@@ -386,8 +370,8 @@ namespace WebXemPhim.Services.Implements
             confirmEmail.ConfirmCode = RandomActiveCode();
             string cfc = confirmEmail.ConfirmCode;
             confirmEmail.IsConfirm = false;
-            _appDbContext.ConfirmEmails.Add(confirmEmail);
-            _appDbContext.SaveChanges();
+            await _appDbContext.ConfirmEmails.AddAsync(confirmEmail);
+            await _appDbContext.SaveChangesAsync();
             string message = SendMail(new SendEmail
             {
                 Email = requests.Email,
@@ -399,7 +383,7 @@ namespace WebXemPhim.Services.Implements
 
         }
        
-        public ResponseObject<DataResponsesUser> ResetPasswordconfirmlink(string code ,Requests_ChangePass requests1)
+        public async Task<ResponseObject<DataResponsesUser>> ResetPasswordconfirmlink(string code ,Requests_ChangePass requests1)
         {
             ConfirmEmail cfe = _appDbContext.ConfirmEmails.Where(x => x.ConfirmCode.Equals(code)).FirstOrDefault();
             if (cfe == null) { return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Cần Phải nhấn vào link ở email!!", null); }
@@ -416,10 +400,93 @@ namespace WebXemPhim.Services.Implements
             _appDbContext.ConfirmEmails.RemoveRange(confirmEmailsToDelete);
             user.Password = BCryptpw.HashPassword(requests1.NewPassword);
             _appDbContext.Users.Update(user);
-            _appDbContext.SaveChanges();
+            await _appDbContext.SaveChangesAsync();
             DataResponsesUser result = _converter.ConvertDt(user);
             return _responseObject.ResponseSucess("Cập Nhập Lại Mật Khẩu Thành Công!", result);
         }
 
+
+        public async Task<PageResult<DataResponsesUser>> GetAllUsers(InputUser input, int pageSize, int pageNumber)
+        {
+            var query = await _appDbContext.Users.Include(x=>x.RankCustomer).AsNoTracking().OrderBy(x => x.RankCustomer.Point).Where(x => x.IsActive == true).ToListAsync();
+            if (!string.IsNullOrEmpty(input.Name))
+            {
+                query = query.Where(x => x.Name.ToLower().Contains(input.Name.ToLower())).ToList();
+            }
+            if (!string.IsNullOrEmpty(input.Email))
+            {
+                query = query.Where(x => x.Email.ToLower().Contains(input.Email.ToLower())).ToList();
+            }
+            if (input.RoleId.HasValue)
+            {
+                query = query.Where(x => x.RoleId == input.RoleId).ToList();
+            }
+            var result = query.Select(x => _converter.ConvertDt(x)).AsQueryable();
+            var data = Pagination.GetPagedData(result, pageSize, pageNumber);
+            return data;
+        }
+
+        public async Task<PageResult<DataResponsesUser>> GetListUserByRank(int pageSize, int pageNumber)
+        {
+            var query =  _appDbContext.Users.Include(x => x.RankCustomer).AsNoTracking().OrderBy(x => x.RankCustomer.Point).Select(x => _converter.ConvertDt(x));
+            var result = Pagination.GetPagedData(query, pageSize, pageNumber);
+            return result;
+        }
+
+        public async Task<PageResult<DataResponsesUser>> GetUserByName(string name, int pageSize, int pageNumber)
+        {
+            var query = _appDbContext.Users.Where(x => x.Name.Equals(name)).Select(x => _converter.ConvertDt(x));
+            var result = Pagination.GetPagedData(query, pageSize, pageNumber);
+            return result;
+        }
+
+        public async Task<ResponseObject<DataResponsesUser>> ChangeDecentralization(Requests_ChangeDecentralization request)
+        {
+            var user = await _appDbContext.Users.SingleOrDefaultAsync(x => x.Id == request.UserId);
+            if (user is null)
+            {
+                return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Không tìm thấy id người dùng", null);
+            }
+            var currentUser = _contextAccessor.HttpContext.User;
+
+            if (!currentUser.Identity.IsAuthenticated)
+            {
+                return _responseObject.ResponseFail(StatusCodes.Status401Unauthorized, "Người dùng không được xác thực hoặc không được xác định", null);
+            }
+
+            if (!currentUser.IsInRole("Admin"))
+            {
+                return _responseObject.ResponseFail(StatusCodes.Status403Forbidden, "Không đủ quyền sử dụng chức năng này", null);
+            }
+            user.RoleId = request.RoleId;
+            _appDbContext.Users.Update(user);
+            await _appDbContext.SaveChangesAsync();
+            return _responseObject.ResponseSucess("Thay đổi quyền người dùng thành công", _converter.ConvertDt(user));
+        }
+
+        public async Task<ResponseObject<DataResponsesUser>> UpdateUserInformation(int userId, Requests_UpdateUserInformation request)
+        {
+            var user = await _appDbContext.Users.SingleOrDefaultAsync(x => x.Id == userId);
+
+            if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Name) || string.IsNullOrWhiteSpace(request.PhoneNumber) || string.IsNullOrWhiteSpace(request.Email))
+            {
+                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Vui lòng điền đầy đủ thông tin", null);
+            }
+            if (!ValidateEmail.IsValidEmail(request.Email))
+            {
+                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Định dạng email không hợp lệ", null);
+            }
+            if (!ValidatePhoneNumber.IsValidPN(request.PhoneNumber))
+            {
+                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Định dạng số điện thoại không hợp lệ", null);
+            }
+            user.Username = request.Username;
+            user.Name = request.Name;
+            user.Email = request.Email;
+            user.PhoneNumber = request.PhoneNumber;
+            _appDbContext.Users.Update(user);
+            await _appDbContext.SaveChangesAsync();
+            return _responseObject.ResponseSucess("Cập nhật thông tin thành công",  _converter.ConvertDt(user));
+        }
     }
 }

@@ -5,7 +5,7 @@
         public string Code { get; set; }
         public int ScheduleId { get; set; }
         public int SeatId { get; set; }
-        public double? PriceTicket { get; set; }
+        public double PriceTicket { get; set; }
         public bool? IsActive { get; set; } = true;
         
         public Schedule? Schedule { get; set; }

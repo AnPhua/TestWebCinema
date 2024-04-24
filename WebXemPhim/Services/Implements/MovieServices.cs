@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using WebXemPhim.Entities;
 using WebXemPhim.Handle.HandleImages;
+using WebXemPhim.Handle.HandlePagination;
 using WebXemPhim.Payloads.Converters;
 using WebXemPhim.Payloads.DataRequests;
 using WebXemPhim.Payloads.DataResponses;
@@ -205,5 +206,31 @@ namespace WebXemPhim.Services.Implements
             return _responseObjectRate.ResponseSucess("Cập Nhật Thông Tin Thể Loại Phim Thành Công!!", _rateConverter.ConvertDt(movieUpdateRate));
 
         }
+        //Hiển thị các bộ phim nổi bật(sắp xếp theo số lượng đặt vé)
+        //public PageResult<DataResponsesMovie> GetFeaturedMovies(int pageSize, int pageNumber)
+        //{
+        //    var query = _appDbContext.Movies
+        //                .AsNoTracking()
+        //                .Where(m => m.IsActive == true)
+        //                .Select(m => new { Movie = m, TotalTickets = m.Schedules.Sum(s => s.Tickets.Sum(t => t.BillTickets.Sum(bt => bt.Quantity))) })
+        //                .OrderByDescending(mt => mt.TotalTickets)
+        //                .Select(mt => mt.Movie)
+        //                .Select(m => _movieConverter.ConvertDt(m));
+        //    var result = Pagination.GetPagedData(query, pageSize, pageNumber);
+        //    return result;
+        //}
+        // Sắp xếp theo ngày công chiếu mới nhất
+        public async Task<PageResult<DataResponsesMovie>> GetFeaturedMovies(int pageSize, int pageNumber)
+        {
+            var query =  _appDbContext.Movies
+                        .AsNoTracking()
+                        .Where(m => m.IsActive == true)
+                        .OrderByDescending(m => m.PremiereDate) 
+                        .Select(m => _movieConverter.ConvertDt(m));
+
+            var result = Pagination.GetPagedData(query, pageSize, pageNumber);
+            return result;
+        }
+
     }
 }

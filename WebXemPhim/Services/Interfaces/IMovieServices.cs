@@ -1,6 +1,7 @@
 ﻿using WebXemPhim.Payloads.DataResponses;
 using WebXemPhim.Payloads.Responses;
 using WebXemPhim.Payloads.DataRequests;
+using WebXemPhim.Handle.HandlePagination;
 
 namespace WebXemPhim.Services.Interfaces
 {
@@ -15,5 +16,6 @@ namespace WebXemPhim.Services.Interfaces
         ResponseObject<DataResponsesMovieType> CreateMovieType(Requests_CreateMovieType requests);
         ResponseObject<DataResponsesMovieType> UpdateMovieType(Requests_UpdateMovieType requests);
         string DeleteMovieType(int movieTypeId);
+        Task<PageResult<DataResponsesMovie>> GetFeaturedMovies(int pageSize, int pageNumber);
     }
 }

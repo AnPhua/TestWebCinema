@@ -53,10 +53,10 @@ namespace WebXemPhim.Services.Implements
             return list;
         }
 
-        public ResponseObject<DataResponsesRoom> CreateRoom(int cinemaId, Requests_CreateRoom requests)
+        public async Task<ResponseObject<DataResponsesRoom>> CreateRoom(int cinemaId, Requests_CreateRoom requests)
         {
-            var cinema = _appDbContext.Cinemas.SingleOrDefault(x => x.Id == cinemaId);
-            if (cinema is null)
+            var cinema = await _appDbContext.Cinemas.SingleOrDefaultAsync(x => x.Id == cinemaId);
+            if (cinema == null)
             {
                 return _responseRoom.ResponseFail(StatusCodes.Status404NotFound, "Không tìm thấy id của rạp", null);
             }
@@ -69,11 +69,10 @@ namespace WebXemPhim.Services.Implements
                 Name = requests.Name,
                 Type = requests.Type
             };
-            _appDbContext.Rooms.Add(room);
-            _appDbContext.SaveChanges();
+            await _appDbContext.Rooms.AddAsync(room);
+            await _appDbContext.SaveChangesAsync();
             room.Seats = requests.Request_CreateSeats == null ? null : _seatServices.CreateListSeat(room.Id, requests.Request_CreateSeats);
-            _appDbContext.Rooms.Update(room);
-            _appDbContext.SaveChanges();
+   
             return _responseRoom.ResponseSucess("Thêm ghế thành công", _roomConverter.ConvertDt(room));
         }
 
