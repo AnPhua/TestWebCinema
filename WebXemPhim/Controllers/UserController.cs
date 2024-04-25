@@ -17,13 +17,15 @@ namespace WebXemPhim.Controllers
         private readonly IVNPayServices _vNPayServices;
         private readonly IBillServices _billService;
         private readonly IPromotionServices _promotionService;
-        public MemberController(ICinemaServices _iCinemaService, IScheduleServices iScheduleServices, IVNPayServices vNPayServices,IBillServices _billService, IPromotionServices promotionService)
+        private readonly IMovieServices _movieService;
+        public MemberController(ICinemaServices _iCinemaService, IScheduleServices iScheduleServices, IVNPayServices vNPayServices,IBillServices _billService, IPromotionServices promotionService, IMovieServices movieService)
         {
             this._iCinemaService = _iCinemaService;
             _iScheduleServices = iScheduleServices;
             _vNPayServices = vNPayServices;
             this._billService = _billService;
             _promotionService = promotionService;
+            _movieService = movieService;
         }
         [HttpGet("getCinemaByMovie")]
         public async Task<IActionResult> GetCinemaByMovie(int movieId, int pageSize = 10, int pageNumber = 1)
@@ -110,6 +112,16 @@ namespace WebXemPhim.Controllers
         public async Task<IActionResult> GetAllPromotions(int pageSize = 10, int pageNumber = 1)
         {
             return Ok(await _promotionService.GetAllPromotions(pageSize, pageNumber));
+        }
+        [HttpGet("GetAllMovieTypes")]
+        public async Task<IActionResult> GetAllMovieTypes(int pageSize = 10, int pageNumber = 1)
+        {
+            return Ok(await _movieService.GetAllMovieTypes(pageSize, pageNumber));
+        }
+        [HttpGet("GetMovieTypeById/{movieTypeId}")]
+        public async Task<IActionResult> GetMovieTypeById([FromRoute] int movieTypeId)
+        {
+            return Ok(await _movieService.GetMovieTypeById(movieTypeId));
         }
     }
 }

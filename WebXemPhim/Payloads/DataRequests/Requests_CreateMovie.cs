@@ -9,6 +9,8 @@ namespace WebXemPhim.Payloads.DataRequests
         public DateTime PremiereDate { get; set; }
         public string Description { get; set; }
         public string Director { get; set; }
+        public string Caster { get; set; }
+        public bool? IsHot { get; set; }
         [DataType(DataType.Upload)]
         public IFormFile Image { get; set; }
         [DataType(DataType.Upload)]

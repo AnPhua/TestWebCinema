@@ -18,6 +18,8 @@ namespace WebXemPhim.Payloads.Converters
             {
                 Description = movie.Description,
                 Director = movie.Director,
+                Caster = movie.Caster,
+                IsHot = movie.IsHot,
                 EndTime = movie.EndTime,
                 PremiereDate = movie.PremiereDate,
                 Id = movie.Id,

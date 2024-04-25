@@ -2,6 +2,7 @@
 using WebXemPhim.Payloads.Responses;
 using WebXemPhim.Payloads.DataRequests;
 using WebXemPhim.Handle.HandlePagination;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace WebXemPhim.Services.Interfaces
 {
@@ -17,5 +18,9 @@ namespace WebXemPhim.Services.Interfaces
         ResponseObject<DataResponsesMovieType> UpdateMovieType(Requests_UpdateMovieType requests);
         string DeleteMovieType(int movieTypeId);
         Task<PageResult<DataResponsesMovie>> GetFeaturedMovies(int pageSize, int pageNumber);
+        Task<PageResult<DataResponsesMovieType>> GetAllMovieTypes(int pageSize, int pageNumber);
+        Task<ResponseObject<DataResponsesMovieType>> GetMovieTypeById(int movieTypeId);
+        Task<PageResult<DataResponsesMovie>> GetAllMovie(InputFilter input, int pageSize, int pageNumber);
+        Task<ResponseObject<DataResponsesMovie>> GetMovieById(int movieId);
     }
 }

@@ -37,6 +37,7 @@ namespace WebXemPhim.Services.Implements
                string.IsNullOrEmpty(requests.Description) ||
                string.IsNullOrEmpty(requests.Director) ||
                string.IsNullOrEmpty(requests.Name)||
+               string.IsNullOrEmpty(requests.Caster)||
                requests.Image == null || requests.Image.Length == 0 ||
                requests.HeroImage == null || requests.HeroImage.Length == 0 ||
                string.IsNullOrEmpty(requests.Language) ||
@@ -62,6 +63,8 @@ namespace WebXemPhim.Services.Implements
             {
                 Description = requests.Description,
                 Director = requests.Director,
+                Caster = requests.Caster,
+                IsHot = requests.IsHot,
                 EndTime = requests.EndTime,
                 Image = uploadResult[0],
                 HeroImage = uploadResult[1],
@@ -164,6 +167,8 @@ namespace WebXemPhim.Services.Implements
                 return _responseObjectMovie.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy Rate Phim", null);
             }
             movieUpdate.Director = requests.Director;
+            movieUpdate.IsHot = requests.IsHot;
+            movieUpdate.Caster = requests.Caster;
             movieUpdate.MovieDuration = requests.MovieDuration;
             movieUpdate.Description = requests.Description;
             movieUpdate.EndTime = requests.EndTime;
@@ -224,13 +229,53 @@ namespace WebXemPhim.Services.Implements
         {
             var query =  _appDbContext.Movies
                         .AsNoTracking()
-                        .Where(m => m.IsActive == true)
                         .OrderByDescending(m => m.PremiereDate) 
                         .Select(m => _movieConverter.ConvertDt(m));
 
             var result = Pagination.GetPagedData(query, pageSize, pageNumber);
             return result;
         }
+        public async Task<PageResult<DataResponsesMovieType>> GetAllMovieTypes(int pageSize, int pageNumber)
+        {
+            var query = _appDbContext.MovieTypes.Include(x => x.Movies).AsNoTracking().Select(x => _movieTypeConverter.ConvertDt(x));
+            var result = Pagination.GetPagedData(query, pageSize, pageNumber);
+            return result;
+        }
 
+        public async Task<ResponseObject<DataResponsesMovieType>> GetMovieTypeById(int movieTypeId)
+        {
+            var movieType = await _appDbContext.MovieTypes.SingleOrDefaultAsync(x => x.Id == movieTypeId);
+            if (movieType == null)
+            {
+                return _responseObjectMovieType.ResponseFail(StatusCodes.Status404NotFound, "Thể loại phim không tồn tại", null);
+            }
+            return _responseObjectMovieType.ResponseSucess("Lấy dữ liệu thành công", _movieTypeConverter.ConvertDt(movieType));
+        }
+
+        public async Task<PageResult<DataResponsesMovie>> GetAllMovie(InputFilter input, int pageSize, int pageNumber)
+        {
+            var query =   _appDbContext.Movies.Include(x => x.MovieType).AsNoTracking().ToList();
+            if (input.PremiereDate.HasValue)
+            {
+                query = query.Where(x => x.PremiereDate == input.PremiereDate).ToList();
+            }
+            if (input.MovieTypeId.HasValue)
+            {
+                query = query.Where(x => x.MovieTypeId == input.MovieTypeId).ToList();
+            }
+            if (!string.IsNullOrEmpty(input.Name))
+            {
+                query = query.Where(x => x.Name.Trim().ToLower().Contains(input.Name.Trim().ToLower())).ToList();
+            }
+            var queryResult = query.Select(x => _movieConverter.ConvertDt(x)).AsQueryable();
+            var result = Pagination.GetPagedData(queryResult, pageSize, pageNumber);
+            return result;
+        }
+
+        public async Task<ResponseObject<DataResponsesMovie>> GetMovieById(int movieId)
+        {
+            var movie = await _appDbContext.Movies.SingleOrDefaultAsync(x => x.Id == movieId);
+            return _responseObjectMovie.ResponseSucess("Lấy thông tin thành công", _movieConverter.ConvertDt(movie));
+        }
     }
 }

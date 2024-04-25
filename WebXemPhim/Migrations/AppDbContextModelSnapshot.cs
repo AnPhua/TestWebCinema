@@ -292,6 +292,10 @@ namespace WebXemPhim.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Caster")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -312,6 +316,9 @@ namespace WebXemPhim.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool?>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("IsHot")
                         .HasColumnType("bit");
 
                     b.Property<string>("Language")
@@ -678,7 +685,7 @@ namespace WebXemPhim.Migrations
                     b.Property<bool?>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<double?>("PriceTicket")
+                    b.Property<double>("PriceTicket")
                         .HasColumnType("float");
 
                     b.Property<int>("ScheduleId")

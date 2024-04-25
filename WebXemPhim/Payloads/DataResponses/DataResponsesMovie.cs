@@ -9,6 +9,8 @@ namespace WebXemPhim.Payloads.DataResponses
         public DateTime PremiereDate { get; set; }
         public string Description { get; set; }
         public string Director { get; set; }
+        public string Caster { get; set; }
+        public bool? IsHot { get; set; }
         public string Image { get; set; }
         public string HeroImage { get; set; }
         public string Language { get; set; }

@@ -16,12 +16,14 @@ namespace WebXemPhim.Controllers
         private readonly IScheduleServices _iScheduleService;
         private readonly IBillServices _billService;
         private readonly ITicketServices _ticketService;
-        public StaffController(ICinemaServices _iCinemaService,IMovieServices _iMovieService, IScheduleServices _iScheduleService, IBillServices _billService)
+        private readonly IMovieServices _movieServices;
+        public StaffController(ICinemaServices _iCinemaService,IMovieServices _iMovieService, IScheduleServices _iScheduleService, IBillServices _billService, IMovieServices movieServices)
         {
             this._iCinemaService = _iCinemaService;
             this._iMovieService = _iMovieService;
             this._iScheduleService = _iScheduleService;
             this._billService = _billService;
+            _movieServices = movieServices;
         }
         [HttpPost("CreateTicket")]
         [Authorize(Roles = "Admin,Censor")]
@@ -41,6 +43,21 @@ namespace WebXemPhim.Controllers
         {
             return Ok(await _iCinemaService.GetListRoomInCinema(pageSize, pageNumber));
         }
+        [HttpGet("GetAllMovie")]
+        public async Task<IActionResult> GetAllMovie([FromQuery] InputFilter input, int pageSize = 10, int pageNumber = 1)
+        {
+            return Ok(await _movieServices.GetAllMovie(input, pageSize, pageNumber));
+        }
+        [HttpGet("GetMovieById")]
+        public async Task<IActionResult> GetMovieById(int movieId)
+        {
+            return Ok(await _movieServices.GetMovieById(movieId));
+        }
+        [HttpGet("GetFeaturedMovies")]
+        public async Task<IActionResult> GetFeaturedMovies(int pageSize = 10, int pageNumber = 1)
+        {
+            return Ok(await _movieServices.GetFeaturedMovies(pageSize, pageNumber));
+        }
         [HttpGet("GetPaymentHistoryByBillId")]
         [Authorize(Roles = "Admin,Censor")]
         public async Task<IActionResult> GetPaymentHistoryByBillId(int billId)
@@ -53,12 +70,7 @@ namespace WebXemPhim.Controllers
         {
             return Ok(await _billService.GetAllBills(pageSize, pageNumber));
         }
-        [HttpGet("getFeaturedMovies")]
-        [Authorize(Roles = "Admin,Censor")]
-        public async Task<IActionResult> GetFeaturedMovies(int pageSize = 10, int pageNumber = 1)
-        {
-            return Ok(await _iMovieService.GetFeaturedMovies(pageSize, pageNumber));
-        }
+
         [HttpGet("SalesStatistics")]
         [Authorize(Roles = "Admin,Censor")]
         public async Task<IActionResult> SalesStatistics([FromQuery] InputStatistic input)
