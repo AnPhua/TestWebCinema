@@ -11,6 +11,7 @@ namespace WebXemPhim.Payloads.DataResponses
         public string Director { get; set; }
         public string Caster { get; set; }
         public bool? IsHot { get; set; }
+        public bool? IsSellTicket { get; set; }
         public string Image { get; set; }
         public string HeroImage { get; set; }
         public string Language { get; set; }

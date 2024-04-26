@@ -241,6 +241,28 @@ namespace WebXemPhim.Services.Implements
             var result = Pagination.GetPagedData(query, pageSize, pageNumber);
             return result;
         }
+        public async Task<PageResult<DataResponsesMovie>> GetMovieUnreference(InputDt dt, int pageSize, int pageNumber)
+        {
+            var query = _appDbContext.Movies.Include(x => x.MovieType).AsNoTracking().ToList();
+            if (dt.PremiereDate.HasValue)
+            {
+                query = query.Where(x => x.PremiereDate >= dt.PremiereDate).ToList();
+            }
+            var queryResult = query.Select(x => _movieConverter.ConvertDt(x)).AsQueryable();
+            var result = Pagination.GetPagedData(queryResult, pageSize, pageNumber);
+            return result;
+        }
+        public async Task<PageResult<DataResponsesMovie>> GetMovieShowing(InputDt dt, int pageSize, int pageNumber)
+        {
+            var query = _appDbContext.Movies.Include(x => x.MovieType).AsNoTracking().ToList();
+            if (dt.PremiereDate.HasValue)
+            {
+                query = query.Where(x => x.PremiereDate < dt.PremiereDate).ToList();
+            }
+            var queryResult = query.Select(x => _movieConverter.ConvertDt(x)).AsQueryable();
+            var result = Pagination.GetPagedData(queryResult, pageSize, pageNumber);
+            return result;
+        }
 
         public async Task<ResponseObject<DataResponsesMovieType>> GetMovieTypeById(int movieTypeId)
         {

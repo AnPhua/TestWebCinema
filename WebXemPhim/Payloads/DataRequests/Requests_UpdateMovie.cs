@@ -12,6 +12,7 @@ namespace WebXemPhim.Payloads.DataRequests
         public string Director { get; set; }
         public string Caster { get; set; }
         public bool? IsHot { get; set; }
+        public bool? IsSellTicket { get; set; }
         [DataType(DataType.Upload)]
         public IFormFile Image { get; set; }
         [DataType(DataType.Upload)]

@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MovieManagement.Services.Implements;
+using WebXemPhim.Handle.HandlePagination;
 using WebXemPhim.Payloads.DataRequests;
+using WebXemPhim.Payloads.DataResponses;
 using WebXemPhim.Services.Implements;
 using WebXemPhim.Services.Interfaces;
 
@@ -47,6 +49,16 @@ namespace WebXemPhim.Controllers
         public async Task<IActionResult> GetAllMovie([FromQuery] InputFilter input, int pageSize = 10, int pageNumber = 1)
         {
             return Ok(await _movieServices.GetAllMovie(input, pageSize, pageNumber));
+        }
+        [HttpGet("GetMovieUnreference")]
+        public async Task<IActionResult> GetMovieUnreference([FromQuery] InputDt dt, int pageSize = 10, int pageNumber = 1)
+        {
+            return Ok(await _movieServices.GetMovieUnreference(dt, pageSize, pageNumber));
+        }
+        [HttpGet("GetMovieShowing")]
+        public async Task<IActionResult> GetMovieShowing([FromQuery] InputDt dt, int pageSize = 10, int pageNumber = 1)
+        {
+            return Ok(await _movieServices.GetMovieShowing(dt, pageSize, pageNumber));
         }
         [HttpGet("GetMovieById")]
         public async Task<IActionResult> GetMovieById(int movieId)

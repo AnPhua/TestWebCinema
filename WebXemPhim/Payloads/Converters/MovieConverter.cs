@@ -27,6 +27,7 @@ namespace WebXemPhim.Payloads.Converters
                 HeroImage = movie.HeroImage,
                 Language = movie.Language,
                 MovieDuration = movie.MovieDuration,
+                IsSellTicket = movie.IsSellTicket,
                 MovieTypeName = _appDbContext.MovieTypes.SingleOrDefault(x => x.Id == movie.MovieTypeId).MovieTypeName,
                 Name = movie.Name,
                 RateName = _appDbContext.Rates.SingleOrDefault(x=>x.Id == movie.RateId).Code,

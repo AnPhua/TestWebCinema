@@ -439,6 +439,12 @@ namespace WebXemPhim.Services.Implements
             var result = Pagination.GetPagedData(query, pageSize, pageNumber);
             return result;
         }
+        public async Task<PageResult<DataResponsesUser>> GetUserById(int userid, int pageSize, int pageNumber)
+        {
+            var query = _appDbContext.Users.Where(x => x.Id.Equals(userid)).Select(x => _converter.ConvertDt(x));
+            var result = Pagination.GetPagedData(query, pageSize, pageNumber);
+            return result;
+        }
 
         public async Task<ResponseObject<DataResponsesUser>> ChangeDecentralization(Requests_ChangeDecentralization request)
         {
