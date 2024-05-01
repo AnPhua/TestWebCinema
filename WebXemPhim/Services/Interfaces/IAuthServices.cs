@@ -17,7 +17,8 @@ namespace WebXemPhim.Services.Interfaces
         string GenerateRefreshToken();
         Task<ResponseObject<DataResponsesUser>> ConfirmEmailLink(Requests_RsPass requests);
         Task<ResponseObject<DataResponsesUser>> ResetPasswordconfirmlink(string code, Requests_ChangePass requests1);
-        Task<ResponseObject<DataResponsesToken>> LoginAcc(Requests_Login requests);
+        Task<ResponseObject<DataResponsesToken>> LoginAccForStaff(Requests_Login requests);
+        Task<ResponseObject<DataResponsesToken>> LoginAccForMember(Requests_Login requests);
         IQueryable<DataResponsesUser> GetAllInfomation();
         Task<ResponseObject<DataResponsesUser>> ChangeDecentralization(Requests_ChangeDecentralization request);
         Task<ResponseObject<DataResponsesUser>> UpdateUserInformation(int userId, Requests_UpdateUserInformation request);

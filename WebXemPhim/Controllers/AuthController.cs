@@ -34,9 +34,10 @@ namespace WebXemPhim.Controllers
 
         }
         [HttpPost("confirmNewAcc")]
-        public IActionResult ConfirmNewAcc([FromBody]Requests_ConfirmEmail requests)
+        public async Task<IActionResult> ConfirmNewAcc([FromBody]Requests_ConfirmEmail requests)
         {
-            return Ok(_userServices.ConfirmNewAcc(requests));
+            var result = await _userServices.ConfirmNewAcc(requests);
+            return Ok(result);
         }
         [HttpPost("renewAccessToken")]
         public IActionResult RestartAccessToKen([FromBody]Requests_RestartToken request)
@@ -56,13 +57,27 @@ namespace WebXemPhim.Controllers
         {
             return Ok(await _userServices.ChangeDecentralization(request));
         }
-        [HttpPost("login")]
-        public async Task<IActionResult> LoginaAcc([FromBody]Requests_Login requests)
+        [HttpPost("loginmember")]
+        public async Task<IActionResult> LoginAccForMember([FromBody] Requests_Login requests)
         {
-            var result = await _userServices.LoginAcc(requests);
+            var result = await _userServices.LoginAccForMember(requests);
             if (result.Status == 400) { return BadRequest(result); }
             else if (result.Status == 404) { return NotFound(result); }
             else if (result.Status == 500) { return NotFound(result); }
+            else if (result.Status == 401) { return Unauthorized(); } 
+            else if (result.Status == 403) { return StatusCode(403, "Trang Web Không Dành Cho Người Dùng!"); } 
+            return Ok(result);
+        }
+
+        [HttpPost("loginstaff")]
+        public async Task<IActionResult> LoginAccForStaff([FromBody] Requests_Login requests)
+        {
+            var result = await _userServices.LoginAccForStaff(requests);
+            if (result.Status == 400) { return BadRequest(result); }
+            else if (result.Status == 404) { return NotFound(result); }
+            else if (result.Status == 500) { return NotFound(result); }
+            else if (result.Status == 401) { return Unauthorized(); }
+            else if (result.Status == 403) { return StatusCode(403, "Trang Web Không Dành Cho Người Dùng!"); }
             return Ok(result);
         }
         [HttpPost("confirmemaillink")]
@@ -130,9 +145,9 @@ namespace WebXemPhim.Controllers
             var results =  _userServices.GetAllInfomation(); 
             return Ok(results); 
         }
-        [HttpPut]
+        [HttpPut("changepassword")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<IActionResult> ChangePassword([FromForm] Requests_ChangePass requests)
+        public async Task<IActionResult> ChangePassword([FromQuery] Requests_ChangePass requests)
         {
             var userClaim =  HttpContext.User.FindFirst("UserId");
             if (userClaim == null)
@@ -146,7 +161,7 @@ namespace WebXemPhim.Controllers
             {
                 return BadRequest("Id không tồn tại!!.");
             }
-            return Ok(_userServices.ChangeYourPassword(id, requests));
+            return Ok( await _userServices.ChangeYourPassword(id, requests));
         }
         [HttpGet("getAllUsers")]
         public async Task<IActionResult> GetAllUsers([FromQuery] InputUser input, int pageSize = 10, int pageNumber = 1)

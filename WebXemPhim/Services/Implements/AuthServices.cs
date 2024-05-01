@@ -18,6 +18,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using WebXemPhim.Handle.Global;
 using WebXemPhim.Handle.HandlePagination;
+using Microsoft.AspNetCore.Identity;
 
 namespace WebXemPhim.Services.Implements
 {
@@ -94,7 +95,7 @@ namespace WebXemPhim.Services.Implements
             }
             if (_appDbContext.Users.Any(x => x.Username.Equals(requests.Username)))
             {
-                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Username Này Đã Tồn Tại", null);
+                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Tên Đăng Nhập Này Đã Tồn Tại", null);
             }
             if (!ValidateEmail.IsValidEmail(requests.Email))
             {
@@ -102,15 +103,15 @@ namespace WebXemPhim.Services.Implements
             }
             if (!ValidateUserName.IsValidUser(requests.Username))
             {
-                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Định Dạng UserName Không Đúng", null);
+                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Định Dạng Tên Đăng Nhập Không Đúng", null);
             }
             if (!ValidatePhoneNumber.IsValidPN(requests.PhoneNumber))
             {
-                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Định Dạng PhoneNumber Không Đúng", null);
+                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Định Dạng Số Điện Thoại Không Đúng", null);
             }
             if (!ValidateName.IsValidName(requests.Name))
             {
-                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Định Dạng Name không đúng", null);
+                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Định Dạng Tên Người Dùng Không Đúng", null);
             }
             User user = new User();
             user.Email = requests.Email;
@@ -126,7 +127,7 @@ namespace WebXemPhim.Services.Implements
             await _appDbContext.SaveChangesAsync();
             ConfirmEmail confirmEmail = new ConfirmEmail();
             confirmEmail.UserId = user.Id;
-            confirmEmail.ExpiredTime = DateTime.UtcNow.AddMinutes(30);
+            confirmEmail.ExpiredTime = DateTime.Now.AddMinutes(30);
             confirmEmail.ConfirmCode = RandomActiveCode();
             confirmEmail.IsConfirm = false;
             await _appDbContext.ConfirmEmails.AddAsync(confirmEmail);
@@ -136,21 +137,21 @@ namespace WebXemPhim.Services.Implements
             {
                 Email = requests.Email,
                 Title = "KÍCH HOẠT TÀI KHOẢN MỚI: ",
-                Body = "MÃ KÍCH HOẠT:[<strong style='font-weight:900; font-size:25px;'>" + confirmEmail.ConfirmCode + "</strong>] Có hiệu lực 30 phút"
+                Body = "MÃ KÍCH HOẠT:[<strong style='font-weight:900; font-size:15px;'>" + confirmEmail.ConfirmCode + "</strong>] Có hiệu lực 30 phút"
             });
             return _responseObject.ResponseSucess("Đăng Ký Tài Khoản Thành Công!Hãy Kiểm Tra Mail Để Xác Thực Tài Khoản" , result);    
 
         }
         public async Task<ResponseObject<DataResponsesUser>> ConfirmNewAcc(Requests_ConfirmEmail requests)
         {
-            ConfirmEmail confirmEmail = _appDbContext.ConfirmEmails.Where(x => x.ConfirmCode.Equals(requests.ConfirmCode)).SingleOrDefault();
+            ConfirmEmail confirmEmail = await _appDbContext.ConfirmEmails.Where(x => x.ConfirmCode.Equals(requests.ConfirmCode)).SingleOrDefaultAsync();
             if (confirmEmail == null)
             {
                 return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Mã Xác Thực Không Đúng ,Xác Minh Tài Khoản Thất Bại", null);
             }
-            if (confirmEmail.ExpiredTime < DateTime.UtcNow)
+            if (confirmEmail.ExpiredTime < DateTime.Now)
             {
-                User userdetele = _appDbContext.Users.FirstOrDefault(x => x.Id == confirmEmail.UserId);
+                User userdetele = await _appDbContext.Users.FirstOrDefaultAsync(x => x.Id == confirmEmail.UserId);
                 _appDbContext.ConfirmEmails.Remove(confirmEmail);
                 _appDbContext.Users.Remove(userdetele);
                 _appDbContext.SaveChanges();
@@ -162,8 +163,9 @@ namespace WebXemPhim.Services.Implements
             _appDbContext.ConfirmEmails.Remove(confirmEmail);
             _appDbContext.Users.Update(user);
             await _appDbContext.SaveChangesAsync();
-            DataResponsesUser result = _converter.ConvertDt(user);
-            return _responseObject.ResponseSucess("Xác Thực Tài Khoản Thành Công!", result);
+            return _responseObject.ResponseSucess("Xác Thực Tài Khoản Thành Công!", _converter.ConvertDt(user));
+            
+            
         }
         public string GenerateRefreshToken()
         {
@@ -188,6 +190,8 @@ namespace WebXemPhim.Services.Implements
                     new Claim("UserId",user.Id.ToString()),
                     new Claim("Email",user.Email),
                     new Claim("Name",user.Name),
+                    new Claim("PhoneNumber",user.PhoneNumber),
+                    new Claim("Roles",role.RoleName),
                     new Claim(ClaimTypes.Role,role?.Code ?? ""),
 
                 }),
@@ -259,30 +263,65 @@ namespace WebXemPhim.Services.Implements
             }
         }
 
-        public async Task<ResponseObject<DataResponsesToken>> LoginAcc(Requests_Login requests)
+        public async Task<ResponseObject<DataResponsesToken>> LoginAccForMember(Requests_Login requests)
         {
             var user = await _appDbContext.Users.SingleOrDefaultAsync(x => x.Username.Equals(requests.UserName));
             bool checkPass = BCryptpw.Verify(requests.Password, user.Password);
+            if(user.RoleId != 3)
+            {
+                return _responseTokenObject.ResponseFail(StatusCodes.Status400BadRequest, "Trang Web Chỉ Dành Cho Người Dùng!", null);
+            }
             if (string.IsNullOrEmpty(requests.UserName)||
                string.IsNullOrEmpty(requests.Password))
             {
-                return _responseTokenObject.ResponseFail(StatusCodes.Status400BadRequest, "Username và Password đang bị trống!",null);
+                return _responseTokenObject.ResponseFail(StatusCodes.Status400BadRequest, "Tên Đăng Nhập Và Mật Khẩu Đang Bị Trống!",null);
             }
             if (user == null)
             {
-                return _responseTokenObject.ResponseFail(StatusCodes.Status400BadRequest, "Username không tồn tại! T.T", null);
+                return _responseTokenObject.ResponseFail(StatusCodes.Status400BadRequest, "Tên Đăng Nhập Không Tồn Tại! T.T", null);
             }
             if (user.UserStatusId == 1) //có thể vào
             {
-                return _responseTokenObject.ResponseFail(StatusCodes.Status401Unauthorized, "Tài Khoản của bạn chưa được kích hoạt!", null);
+                return _responseTokenObject.ResponseFail(StatusCodes.Status401Unauthorized, "Tài Khoản Của Bạn Chưa Được Kích Hoạt!", null);
             }
             if (user.IsActive == false)
             {
-                return _responseTokenObject.ResponseFail(StatusCodes.Status400BadRequest, "Tài Khoản của bạn đã bị xóa!", null);
+                return _responseTokenObject.ResponseFail(StatusCodes.Status400BadRequest, "Tài Khoản Của Bạn Đã Bị Xóa!", null);
             }
             if (!checkPass)
             {
-                return _responseTokenObject.ResponseFail(StatusCodes.Status400BadRequest, "Password không chính xác! T.T", null);
+                return _responseTokenObject.ResponseFail(StatusCodes.Status400BadRequest, "Mật Khẩu Không Chính Xác! T.T", null);
+            }
+            return _responseTokenObject.ResponseSucess("Đăng Nhập Thành Công ^^!", GenerateAccessToken(user));
+        }
+        public async Task<ResponseObject<DataResponsesToken>> LoginAccForStaff(Requests_Login requests)
+        {
+            var user = await _appDbContext.Users.SingleOrDefaultAsync(x => x.Username.Equals(requests.UserName));
+            bool checkPass = BCryptpw.Verify(requests.Password, user.Password);
+            if (user.RoleId == 3)
+            {
+                return _responseTokenObject.ResponseFail(StatusCodes.Status400BadRequest, "Trang Web Không Dành Cho Người Dùng!", null);
+            }
+            if (string.IsNullOrEmpty(requests.UserName) ||
+               string.IsNullOrEmpty(requests.Password))
+            {
+                return _responseTokenObject.ResponseFail(StatusCodes.Status400BadRequest, "Tên Đăng Nhập Và Mật Khẩu Đang Bị Trống!", null);
+            }
+            if (user == null)
+            {
+                return _responseTokenObject.ResponseFail(StatusCodes.Status400BadRequest, "Tên Đăng Nhập Không Tồn Tại! T.T", null);
+            }
+            if (user.UserStatusId == 1) //có thể vào
+            {
+                return _responseTokenObject.ResponseFail(StatusCodes.Status401Unauthorized, "Tài Khoản Của Bạn Chưa Được Kích Hoạt!", null);
+            }
+            if (user.IsActive == false)
+            {
+                return _responseTokenObject.ResponseFail(StatusCodes.Status400BadRequest, "Tài Khoản Của Bạn Đã Bị Xóa!", null);
+            }
+            if (!checkPass)
+            {
+                return _responseTokenObject.ResponseFail(StatusCodes.Status400BadRequest, "Mật Khẩu Không Chính Xác! T.T", null);
             }
             return _responseTokenObject.ResponseSucess("Đăng Nhập Thành Công ^^!", GenerateAccessToken(user));
         }
@@ -305,9 +344,15 @@ namespace WebXemPhim.Services.Implements
         public async Task<ResponseObject<DataResponsesUser>> ChangeYourPassword(int usid, Requests_ChangePass requests)
         {
             var user = await _appDbContext.Users.SingleOrDefaultAsync(x => x.Id == usid);
-            if(!requests.NewPassword.Equals(requests.ConfirmPassword))
+            bool correctPassword = BCryptpw.Verify(requests.OldPassword,user.Password);
+            if (!correctPassword)
             {
-                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Mật khẩu không trùng nhau!", null);
+                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Mật Khẩu Cũ Không Đúng!", null);
+            }
+
+            if (!requests.NewPassword.Equals(requests.ConfirmPassword))
+            {
+                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Mật Khẩu Không Trùng Nhau!", null);
             }
             user.Password = BCryptpw.HashPassword(requests.NewPassword);
             _appDbContext.Users.Update(user);
