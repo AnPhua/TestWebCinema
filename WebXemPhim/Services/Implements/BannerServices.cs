@@ -21,10 +21,14 @@ namespace WebXemPhim.Services.Implements
         }
         public async Task<ResponseObject<DataResponsesBanner>> CreateBanner(Requests_CreateBanner request)
         {
-
+            var uploadTasks = new Task<string>[]
+            {
+                HandleUploadFileImages.UploadLoadFile(request.ImageUrl)
+            };
+            var uploadResult = await Task.WhenAll(uploadTasks);
             Banner banner = new Banner
             {
-                ImageUrl = await HandleUploadFileImages.UploadLoadFile(request.ImageUrl),
+                ImageUrl = uploadResult[0],
                 Title = request.Title
             };
             await _appDbContext.Banners.AddAsync(banner);
@@ -37,11 +41,11 @@ namespace WebXemPhim.Services.Implements
             var banner = await _appDbContext.Banners.SingleOrDefaultAsync(x => x.Id == bannerId);
             if (banner == null)
             {
-                return "Không tồn tại";
+                return "Không Tồn Tại Id Banner";
             }
             _appDbContext.Banners.Remove(banner);
             await _appDbContext.SaveChangesAsync();
-            return "Xóa banner thành công";
+            return "Xóa Banner Thành Công!";
         }
 
         public async Task<PageResult<DataResponsesBanner>> GetAllBanners(int pageSize, int pageNumber)
@@ -50,6 +54,12 @@ namespace WebXemPhim.Services.Implements
             var result = Pagination.GetPagedData(query, pageSize, pageNumber);
             return result;
         }
+        public IEnumerable<Banner> GetAllBannersNoPagination()
+        {
+            return _appDbContext.Banners.AsQueryable();
+        }
+
+
 
         public async Task<ResponseObject<DataResponsesBanner>> GetBannerById(int bannerId)
         {

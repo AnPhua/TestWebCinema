@@ -106,6 +106,13 @@ namespace WebXemPhim.Controllers
         {
             return Ok(await movieServices.CreateMovie(requests));
         }
+        [HttpPost("CreateBanner")]
+        [Authorize(Roles = "Admin,Censor")]
+        [Consumes(contentType: "multipart/form-data")]
+        public async Task<IActionResult> CreateBanner([FromForm] Requests_CreateBanner requests)
+        {
+            return Ok(await bannerServices.CreateBanner(requests));
+        }
         [HttpPost("CreateMovieType")]
         [Authorize(Roles = "Admin")]
         public IActionResult CreateMovieType([FromForm] Requests_CreateMovieType requests)
@@ -175,13 +182,7 @@ namespace WebXemPhim.Controllers
         {
             return Ok(await foodServices.UpdateFood(requests));
         }
-        [HttpPost("CreateBanner")]
-        [Authorize(Roles = "Admin, Censor")]
-        [Consumes(contentType: "multipart/form-data")]
-        public async Task<IActionResult> CreateBanner(Requests_CreateBanner request)
-        {
-            return Ok(await bannerServices.CreateBanner(request));
-        }
+        
         [HttpDelete("DeleteBanner/{bannerId}")]
         [Authorize(Roles = "Admin, Censor")]
         public async Task<IActionResult> DeleteBanner([FromRoute] int bannerId)
@@ -192,6 +193,11 @@ namespace WebXemPhim.Controllers
         public async Task<IActionResult> GetAllBanners(int pageSize = 10, int pageNumber = 1)
         {
             return Ok(await bannerServices.GetAllBanners(pageSize, pageNumber));
+        }
+        [HttpGet("GetAllBannersNoPagination")]
+        public async Task<IActionResult> GetAllBannersNoPagination()
+        {
+            return Ok( bannerServices.GetAllBannersNoPagination());
         }
         [HttpGet("GetBannerById/{bannerId}")]
         public async Task<IActionResult> GetBannerById([FromRoute] int bannerId)

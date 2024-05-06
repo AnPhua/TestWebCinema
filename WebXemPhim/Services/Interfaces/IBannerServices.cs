@@ -1,4 +1,5 @@
-﻿using WebXemPhim.Handle.HandlePagination;
+﻿using WebXemPhim.Entities;
+using WebXemPhim.Handle.HandlePagination;
 using WebXemPhim.Payloads.DataRequests;
 using WebXemPhim.Payloads.DataResponses;
 using WebXemPhim.Payloads.Responses;
@@ -11,6 +12,7 @@ namespace WebXemPhim.Services.Interfaces
         Task<ResponseObject<DataResponsesBanner>> UpdateBanner(Requests_UpdateBanner request);
         Task<string> DeleteBanner(int bannerId);
         Task<PageResult<DataResponsesBanner>> GetAllBanners(int pageSize, int pageNumber);
+        IEnumerable<Banner> GetAllBannersNoPagination();
         Task<ResponseObject<DataResponsesBanner>> GetBannerById(int bannerId);
     }
 }
