@@ -76,13 +76,27 @@ namespace WebXemPhim.Services.Implements
             var banner = await _appDbContext.Banners.SingleOrDefaultAsync(x => x.Id == request.BannerId);
             if (banner == null)
             {
-                return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Không tìm thấy", null);
+                return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy ID Banner", null);
             }
             banner.Title = request.Title;
             banner.ImageUrl = await HandleUploadFileImages.UpdateFile(banner.ImageUrl, request.ImageUrl);
             _appDbContext.Banners.Update(banner);
             await _appDbContext.SaveChangesAsync();
-            return _responseObject.ResponseSucess("Cập nhật banner thành công", _converter.ConvertDt(banner));
+            return _responseObject.ResponseSucess("Cập Nhật Banner Thành Công", _converter.ConvertDt(banner));
+        }
+
+        public async Task<ResponseObject<DataResponsesBanner>> UpdateBannerHaveString(Requests_UpdateBannerhavestring request)
+        {
+            var banner = await _appDbContext.Banners.SingleOrDefaultAsync(x => x.Id == request.BannerId);
+            if (banner == null)
+            {
+                return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy ID Banner", null);
+            }
+            banner.Title = request.Title;
+            banner.ImageUrl = request.ImageUrl;
+            _appDbContext.Banners.Update(banner);
+            await _appDbContext.SaveChangesAsync();
+            return _responseObject.ResponseSucess("Cập Nhật Banner Thành Công!!", _converter.ConvertDt(banner));
         }
     }
 }

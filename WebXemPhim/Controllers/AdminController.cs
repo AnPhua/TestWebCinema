@@ -207,9 +207,15 @@ namespace WebXemPhim.Controllers
         [HttpPut("UpdateBanner")]
         [Authorize(Roles = "Admin, Censor")]
         [Consumes(contentType: "multipart/form-data")]
-        public async Task<IActionResult> UpdateBanner(Requests_UpdateBanner request)
+        public async Task<IActionResult> UpdateBanner([FromForm] Requests_UpdateBanner request)
         {
             return Ok(await bannerServices.UpdateBanner(request));
+        }
+        [HttpPut("UpdateBannerHaveString")]
+        [Authorize(Roles = "Admin, Censor")]
+        public async Task<IActionResult> UpdateBannerHaveString([FromForm] Requests_UpdateBannerhavestring request)
+        {
+            return Ok(await bannerServices.UpdateBannerHaveString(request));
         }
         [HttpPost("CreatePromotion")]
         [Authorize(Roles = "Admin, Censor")]

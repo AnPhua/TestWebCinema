@@ -10,6 +10,7 @@ namespace WebXemPhim.Services.Interfaces
     {
         Task<ResponseObject<DataResponsesBanner>> CreateBanner(Requests_CreateBanner request);
         Task<ResponseObject<DataResponsesBanner>> UpdateBanner(Requests_UpdateBanner request);
+        Task<ResponseObject<DataResponsesBanner>> UpdateBannerHaveString(Requests_UpdateBannerhavestring request);
         Task<string> DeleteBanner(int bannerId);
         Task<PageResult<DataResponsesBanner>> GetAllBanners(int pageSize, int pageNumber);
         IEnumerable<Banner> GetAllBannersNoPagination();

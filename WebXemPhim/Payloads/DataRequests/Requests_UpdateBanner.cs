@@ -6,7 +6,7 @@ namespace WebXemPhim.Payloads.DataRequests
     {
         public int BannerId { get; set; }
         [DataType(DataType.Upload)]
-        public IFormFile ImageUrl { get; set; }
+        public IFormFile? ImageUrl { get; set; }
         public string Title { get; set; }
     }
 }
