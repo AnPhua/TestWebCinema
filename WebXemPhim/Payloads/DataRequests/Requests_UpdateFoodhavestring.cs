@@ -2,13 +2,12 @@
 
 namespace WebXemPhim.Payloads.DataRequests
 {
-    public class Requests_UpdateFood
+    public class Requests_UpdateFoodhavestring
     {
         public int FoodId { get; set; }
         public double Price { get; set; }
         public string Description { get; set; }
-        [DataType(DataType.Upload)]
-        public IFormFile Image { get; set; }
+        public string Image { get; set; }
         public string NameOfFood { get; set; }
     }
 }

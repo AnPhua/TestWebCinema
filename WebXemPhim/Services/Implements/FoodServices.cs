@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using WebXemPhim.Entities;
 using WebXemPhim.Handle.HandleImages;
+using WebXemPhim.Handle.HandlePagination;
 using WebXemPhim.Payloads.Converters;
 using WebXemPhim.Payloads.DataRequests;
 using WebXemPhim.Payloads.DataResponses;
@@ -35,6 +36,7 @@ namespace WebXemPhim.Services.Implements
                 Image = await HandleUploadFileImages.UploadLoadFile(requests.Image),
                 Description = requests.Description,
                 NameOfFood = requests.NameOfFood,
+                IsActive = true,
             };
             _appDbContext.Foods.Add(createfood);
             _appDbContext.SaveChanges();
@@ -43,7 +45,7 @@ namespace WebXemPhim.Services.Implements
 
         public string DeleteFood(int foodId)
         {
-            var deletefood = _appDbContext.Foods.SingleOrDefault(x => x.Id == foodId);
+            var deletefood =  _appDbContext.Foods.SingleOrDefault(x => x.Id == foodId);
             if (deletefood == null)
             {
                 return "Không Tìm Thấy Id Đồ Ăn!!";
@@ -54,20 +56,52 @@ namespace WebXemPhim.Services.Implements
             return "Xóa Đồ Ăn Thành Công!!";
         }
 
+        public async Task<PageResult<DataResponsesFood>> GetAllFood(int pageSize, int pageNumber)
+        {
+            var query = _appDbContext.Foods.Where(x => x.IsActive == true).Select(x => _foodconverter.ConvertDt(x));
+            var result = Pagination.GetPagedData(query, pageSize, pageNumber);
+            return result;
+        }
+
+        public async Task<ResponseObject<DataResponsesFood>> GetFoodById(int foodId)
+        {
+            var result = await _appDbContext.Foods.SingleOrDefaultAsync(x => x.Id == foodId);
+            if (result == null)
+            {
+                return _responseObjectFood.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy Food Id", null);
+            }
+            return _responseObjectFood.ResponseSucess("Lấy dữ liệu thành công", _foodconverter.ConvertDt(result));
+        }
+
         public async Task<ResponseObject<DataResponsesFood>> UpdateFood(Requests_UpdateFood requests)
         {
-            var foodupdate = _appDbContext.Foods.SingleOrDefault(x => x.Id == requests.Id);
+            var foodupdate = await _appDbContext.Foods.SingleOrDefaultAsync(x => x.Id == requests.FoodId);
             if (foodupdate == null)
             {
-                return _responseObjectFood.ResponseFail(StatusCodes.Status404NotFound, "Không tồn tại Id Đồ Ăn", null);
+                return _responseObjectFood.ResponseFail(StatusCodes.Status404NotFound, "Không Tồn Tại Id Đồ Ăn", null);
             }
             foodupdate.Description = requests.Description;
             foodupdate.Price = requests.Price;
             foodupdate.NameOfFood = requests.NameOfFood;
             foodupdate.Image = await HandleUploadFileImages.UpdateFile(foodupdate.Image, requests.Image);
             _appDbContext.Foods.Update(foodupdate);
-            _appDbContext.SaveChanges();
-            return _responseObjectFood.ResponseSucess("Cập nhật thông tin đồ ăn thành công", _foodconverter.ConvertDt(foodupdate));
+            await _appDbContext.SaveChangesAsync();
+            return _responseObjectFood.ResponseSucess("Cập Nhật Thông Tin Đồ Ăn Thành Công", _foodconverter.ConvertDt(foodupdate));
+        }
+        public async Task<ResponseObject<DataResponsesFood>> UpdateFoodHaveString(Requests_UpdateFoodhavestring requests)
+        {
+            var foodupdate = await _appDbContext.Foods.SingleOrDefaultAsync(x => x.Id == requests.FoodId);
+            if (foodupdate == null)
+            {
+                return _responseObjectFood.ResponseFail(StatusCodes.Status404NotFound, "Không Tồn Tại Id Đồ Ăn", null);
+            }
+            foodupdate.Description = requests.Description;
+            foodupdate.Price = requests.Price;
+            foodupdate.NameOfFood = requests.NameOfFood;
+            foodupdate.Image = requests.Image;
+            _appDbContext.Foods.Update(foodupdate);
+            await _appDbContext.SaveChangesAsync();
+            return _responseObjectFood.ResponseSucess("Cập Nhật Thông Tin Đồ Ăn Thành Công", _foodconverter.ConvertDt(foodupdate));
         }
     }
 }

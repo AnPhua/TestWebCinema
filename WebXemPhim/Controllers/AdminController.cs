@@ -150,9 +150,9 @@ namespace WebXemPhim.Controllers
         {
             return Ok(movieServices.DeleteRate(rateId));
         }
-        [HttpPut("DeleteFood")]
+        [HttpPut("DeleteFood/{foodId}")]
         [Authorize(Roles = "Admin")]
-        public IActionResult DeleteFood([FromBody] int foodId)
+        public IActionResult DeleteFood(int foodId)
         {
             return Ok(foodServices.DeleteFood(foodId));
         }
@@ -182,7 +182,22 @@ namespace WebXemPhim.Controllers
         {
             return Ok(await foodServices.UpdateFood(requests));
         }
-        
+        [HttpPut("UpdateFoodHaveString")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateFoodHaveString([FromForm] Requests_UpdateFoodhavestring requests)
+        {
+            return Ok(await foodServices.UpdateFoodHaveString(requests));
+        }
+        [HttpGet("GetAllFoods")]
+        public async Task<IActionResult> GetAllFoods(int pageSize = 10, int pageNumber = 1)
+        {
+            return Ok(await foodServices.GetAllFood(pageSize, pageNumber));
+        }
+        [HttpGet("GetFoodById/{foodId}")]
+        public async Task<IActionResult> GetFoodById([FromRoute] int foodId)
+        {
+            return Ok(await foodServices.GetFoodById(foodId));
+        }
         [HttpDelete("DeleteBanner/{bannerId}")]
         [Authorize(Roles = "Admin, Censor")]
         public async Task<IActionResult> DeleteBanner([FromRoute] int bannerId)
