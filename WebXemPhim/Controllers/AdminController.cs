@@ -132,12 +132,7 @@ namespace WebXemPhim.Controllers
         {
             return Ok(await foodServices.CreateFood(requests));
         }
-        [HttpPut("DeleteMovie")]
-        [Authorize(Roles = "Admin")]
-        public IActionResult DeleteMovie([FromBody] int movieId)
-        {
-            return Ok(movieServices.DeleteMovie(movieId));
-        }
+        
         [HttpPut("DeleteMovieType")]
         [Authorize(Roles = "Admin")]
         public IActionResult DeleteMovieType([FromBody] int movietypeId)
@@ -155,6 +150,12 @@ namespace WebXemPhim.Controllers
         public IActionResult DeleteFood(int foodId)
         {
             return Ok(foodServices.DeleteFood(foodId));
+        }
+        [HttpPut("DeleteMovie/{movieId}")]
+        [Authorize(Roles = "Admin")]
+        public IActionResult DeleteMovie( int movieId)
+        {
+            return Ok(movieServices.DeleteMovie(movieId));
         }
         [HttpPut("UpdateMovie")]
         [Authorize(Roles = "Admin")]
@@ -213,6 +214,16 @@ namespace WebXemPhim.Controllers
         public async Task<IActionResult> GetAllBannersNoPagination()
         {
             return Ok( bannerServices.GetAllBannersNoPagination());
+        }
+        [HttpGet("GetAllMovieTypesNoPagination")]
+        public async Task<IActionResult> GetAllMovieTypesNoPagination()
+        {
+            return Ok(movieServices.GetAllMovieTypeNoPagination());
+        }
+        [HttpGet("GetAllRateNoPagination")]
+        public async Task<IActionResult> GetAllRateNoPagination()
+        {
+            return Ok(movieServices.GetAllRateTypeNoPagination());
         }
         [HttpGet("GetBannerById/{bannerId}")]
         public async Task<IActionResult> GetBannerById([FromRoute] int bannerId)

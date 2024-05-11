@@ -3,6 +3,7 @@ using WebXemPhim.Payloads.Responses;
 using WebXemPhim.Payloads.DataRequests;
 using WebXemPhim.Handle.HandlePagination;
 using Microsoft.AspNetCore.Components.Forms;
+using WebXemPhim.Entities;
 
 namespace WebXemPhim.Services.Interfaces
 {
@@ -21,6 +22,8 @@ namespace WebXemPhim.Services.Interfaces
         Task<PageResult<DataResponsesMovie>> GetMovieUnreference(InputDt dt,int pageSize, int pageNumber);
         Task<PageResult<DataResponsesMovie>> GetMovieShowing(InputDt dt, int pageSize, int pageNumber);
         Task<PageResult<DataResponsesMovieType>> GetAllMovieTypes(int pageSize, int pageNumber);
+        IEnumerable<MovieType> GetAllMovieTypeNoPagination();
+        IEnumerable<Rate> GetAllRateTypeNoPagination();
         Task<ResponseObject<DataResponsesMovieType>> GetMovieTypeById(int movieTypeId);
         Task<PageResult<DataResponsesMovie>> GetAllMovie(InputFilter input, int pageSize, int pageNumber);
         Task<ResponseObject<DataResponsesMovie>> GetMovieById(int movieId);

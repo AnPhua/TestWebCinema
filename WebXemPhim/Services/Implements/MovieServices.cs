@@ -65,6 +65,7 @@ namespace WebXemPhim.Services.Implements
                 Director = requests.Director,
                 Caster = requests.Caster,
                 IsHot = requests.IsHot,
+                IsSellTicket = false,
                 EndTime = requests.EndTime,
                 Image = uploadResult[0],
                 HeroImage = uploadResult[1],
@@ -276,7 +277,7 @@ namespace WebXemPhim.Services.Implements
 
         public async Task<PageResult<DataResponsesMovie>> GetAllMovie(InputFilter input, int pageSize, int pageNumber)
         {
-            var query =   _appDbContext.Movies.Include(x => x.MovieType).AsNoTracking().ToList();
+            var query =   _appDbContext.Movies.Include(x => x.MovieType).AsNoTracking().Where(x=>x.IsActive == true).ToList();
             if (input.PremiereDate.HasValue)
             {
                 query = query.Where(x => x.PremiereDate == input.PremiereDate).ToList();
@@ -298,6 +299,16 @@ namespace WebXemPhim.Services.Implements
         {
             var movie = await _appDbContext.Movies.SingleOrDefaultAsync(x => x.Id == movieId);
             return _responseObjectMovie.ResponseSucess("Lấy thông tin thành công", _movieConverter.ConvertDt(movie));
+        }
+
+        public IEnumerable<MovieType> GetAllMovieTypeNoPagination()
+        {
+            return _appDbContext.MovieTypes.AsQueryable();
+        }
+
+        public IEnumerable<Rate> GetAllRateTypeNoPagination()
+        {
+            return _appDbContext.Rates.AsQueryable();
         }
     }
 }
