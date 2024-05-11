@@ -11,6 +11,9 @@ namespace WebXemPhim.Services.Interfaces
     {
         Task<ResponseObject<DataResponsesMovie>> CreateMovie(Requests_CreateMovie requests);
         Task<ResponseObject<DataResponsesMovie>> UpdateMovie(Requests_UpdateMovie requests);
+        Task<ResponseObject<DataResponsesMovie>> UpdateMovieHaveString(Requests_UpdateMovieHaveString requests);
+        Task<ResponseObject<DataResponsesMovie>> UpdateMovieImageString(Requests_UpdateMovieImageString requests);
+        Task<ResponseObject<DataResponsesMovie>> UpdateMovieHeroImageString(Requests_UpdateMovieHeroImageString requests);
         string DeleteMovie(int movieId);
         ResponseObject<DataResponsesRate> CreateRate(Requests_CreateRate requests);
         ResponseObject<DataResponsesRate> UpdateRate(Requests_UpdateRate requests);

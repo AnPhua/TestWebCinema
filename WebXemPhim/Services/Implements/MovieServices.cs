@@ -169,6 +169,7 @@ namespace WebXemPhim.Services.Implements
             }
             movieUpdate.Director = requests.Director;
             movieUpdate.IsHot = requests.IsHot;
+            movieUpdate.IsSellTicket = requests.IsSellTicket;
             movieUpdate.Caster = requests.Caster;
             movieUpdate.MovieDuration = requests.MovieDuration;
             movieUpdate.Description = requests.Description;
@@ -184,7 +185,105 @@ namespace WebXemPhim.Services.Implements
             _appDbContext.SaveChanges();
             return _responseObjectMovie.ResponseSucess("Cập Nhật Thông Tin Phim Thành Công!!", _movieConverter.ConvertDt(movieUpdate));
         }
-
+        public async Task<ResponseObject<DataResponsesMovie>> UpdateMovieHaveString(Requests_UpdateMovieHaveString requests)
+        {
+            var movieUpdate = _appDbContext.Movies.SingleOrDefault(x => x.Id == requests.Id);
+            if (movieUpdate is null)
+            {
+                return _responseObjectMovie.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy Id Của Phim", null);
+            }
+            if (!_appDbContext.MovieTypes.Any(x => x.Id == requests.MovieTypeId))
+            {
+                return _responseObjectMovie.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy Thể Loại Phim", null);
+            }
+            if (!_appDbContext.Rates.Any(x => x.Id == requests.RateId))
+            {
+                return _responseObjectMovie.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy Rate Phim", null);
+            }
+            movieUpdate.Director = requests.Director;
+            movieUpdate.IsHot = requests.IsHot;
+            movieUpdate.IsSellTicket = requests.IsSellTicket;
+            movieUpdate.Caster = requests.Caster;
+            movieUpdate.MovieDuration = requests.MovieDuration;
+            movieUpdate.Description = requests.Description;
+            movieUpdate.EndTime = requests.EndTime;
+            movieUpdate.Image = requests.Image;
+            movieUpdate.HeroImage = requests.HeroImage;
+            movieUpdate.Language = requests.Language;
+            movieUpdate.MovieTypeId = requests.MovieTypeId;
+            movieUpdate.Name = requests.Name;
+            movieUpdate.RateId = requests.RateId;
+            movieUpdate.Trailer = requests.Trailer;
+            _appDbContext.Movies.Update(movieUpdate);
+            _appDbContext.SaveChanges();
+            return _responseObjectMovie.ResponseSucess("Cập Nhật Thông Tin Phim Thành Công!!", _movieConverter.ConvertDt(movieUpdate));
+        }
+        public async Task<ResponseObject<DataResponsesMovie>> UpdateMovieImageString(Requests_UpdateMovieImageString requests)
+        {
+            var movieUpdate = _appDbContext.Movies.SingleOrDefault(x => x.Id == requests.Id);
+            if (movieUpdate is null)
+            {
+                return _responseObjectMovie.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy Id Của Phim", null);
+            }
+            if (!_appDbContext.MovieTypes.Any(x => x.Id == requests.MovieTypeId))
+            {
+                return _responseObjectMovie.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy Thể Loại Phim", null);
+            }
+            if (!_appDbContext.Rates.Any(x => x.Id == requests.RateId))
+            {
+                return _responseObjectMovie.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy Rate Phim", null);
+            }
+            movieUpdate.Director = requests.Director;
+            movieUpdate.IsHot = requests.IsHot;
+            movieUpdate.IsSellTicket = requests.IsSellTicket;
+            movieUpdate.Caster = requests.Caster;
+            movieUpdate.MovieDuration = requests.MovieDuration;
+            movieUpdate.Description = requests.Description;
+            movieUpdate.EndTime = requests.EndTime;
+            movieUpdate.Image = requests.Image;
+            movieUpdate.HeroImage = await HandleUploadFileImages.UpdateFile(movieUpdate.HeroImage, requests.HeroImage);
+            movieUpdate.Language = requests.Language;
+            movieUpdate.MovieTypeId = requests.MovieTypeId;
+            movieUpdate.Name = requests.Name;
+            movieUpdate.RateId = requests.RateId;
+            movieUpdate.Trailer = requests.Trailer;
+            _appDbContext.Movies.Update(movieUpdate);
+            _appDbContext.SaveChanges();
+            return _responseObjectMovie.ResponseSucess("Cập Nhật Thông Tin Phim Thành Công!!", _movieConverter.ConvertDt(movieUpdate));
+        }
+        public async Task<ResponseObject<DataResponsesMovie>> UpdateMovieHeroImageString(Requests_UpdateMovieHeroImageString requests)
+        {
+            var movieUpdate = _appDbContext.Movies.SingleOrDefault(x => x.Id == requests.Id);
+            if (movieUpdate is null)
+            {
+                return _responseObjectMovie.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy Id Của Phim", null);
+            }
+            if (!_appDbContext.MovieTypes.Any(x => x.Id == requests.MovieTypeId))
+            {
+                return _responseObjectMovie.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy Thể Loại Phim", null);
+            }
+            if (!_appDbContext.Rates.Any(x => x.Id == requests.RateId))
+            {
+                return _responseObjectMovie.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy Rate Phim", null);
+            }
+            movieUpdate.Director = requests.Director;
+            movieUpdate.IsHot = requests.IsHot;
+            movieUpdate.IsSellTicket = requests.IsSellTicket;
+            movieUpdate.Caster = requests.Caster;
+            movieUpdate.MovieDuration = requests.MovieDuration;
+            movieUpdate.Description = requests.Description;
+            movieUpdate.EndTime = requests.EndTime;
+            movieUpdate.Image = await HandleUploadFileImages.UpdateFile(movieUpdate.Image, requests.Image);
+            movieUpdate.HeroImage = requests.HeroImage;
+            movieUpdate.Language = requests.Language;
+            movieUpdate.MovieTypeId = requests.MovieTypeId;
+            movieUpdate.Name = requests.Name;
+            movieUpdate.RateId = requests.RateId;
+            movieUpdate.Trailer = requests.Trailer;
+            _appDbContext.Movies.Update(movieUpdate);
+            _appDbContext.SaveChanges();
+            return _responseObjectMovie.ResponseSucess("Cập Nhật Thông Tin Phim Thành Công!!", _movieConverter.ConvertDt(movieUpdate));
+        }
         public ResponseObject<DataResponsesMovieType> UpdateMovieType(Requests_UpdateMovieType requests)
         {
             var movieUpdateType = _appDbContext.MovieTypes.SingleOrDefault(x => x.Id == requests.Id);

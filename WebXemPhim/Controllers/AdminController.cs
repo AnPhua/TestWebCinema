@@ -164,6 +164,26 @@ namespace WebXemPhim.Controllers
         {
             return Ok(await movieServices.UpdateMovie(requests));
         }
+        [HttpPut("UpdateMovieHaveString")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateMovieHaveString([FromForm] Requests_UpdateMovieHaveString request)
+        {
+            return Ok(await movieServices.UpdateMovieHaveString(request));
+        }
+        [HttpPut("UpdateMovieImageString")]
+        [Authorize(Roles = "Admin")]
+        [Consumes(contentType: "multipart/form-data")]
+        public async Task<IActionResult> UpdateMovieImageString([FromForm] Requests_UpdateMovieImageString requests)
+        {
+            return Ok(await movieServices.UpdateMovieImageString(requests));
+        }
+        [HttpPut("UpdateMovieHeroString")]
+        [Authorize(Roles = "Admin")]
+        [Consumes(contentType: "multipart/form-data")]
+        public async Task<IActionResult> UpdateMovieHeroString([FromForm] Requests_UpdateMovieHeroImageString requests)
+        {
+            return Ok(await movieServices.UpdateMovieHeroImageString(requests));
+        }
         [HttpPut("UpdateMovieType")]
         [Authorize(Roles = "Admin")]
         public IActionResult UpdateMovieType([FromForm] Requests_UpdateMovieType requests)
