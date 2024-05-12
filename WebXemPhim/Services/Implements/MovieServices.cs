@@ -397,7 +397,7 @@ namespace WebXemPhim.Services.Implements
         public async Task<ResponseObject<DataResponsesMovie>> GetMovieById(int movieId)
         {
             var movie = await _appDbContext.Movies.SingleOrDefaultAsync(x => x.Id == movieId);
-            return _responseObjectMovie.ResponseSucess("Lấy thông tin thành công", _movieConverter.ConvertDt(movie));
+            return _responseObjectMovie.ResponseSucess("Lấy thông tin thành công", _movieConverter.ConvertDtID(movie));
         }
 
         public IEnumerable<MovieType> GetAllMovieTypeNoPagination()

@@ -51,9 +51,9 @@ namespace WebXemPhim.Payloads.Converters
                 Language = movie.Language,
                 MovieDuration = movie.MovieDuration,
                 IsSellTicket = movie.IsSellTicket,
-                MovieTypeName = movie.MovieTypeId.ToString(),
+                MovieTypeName = _appDbContext.MovieTypes.SingleOrDefault(x => x.Id == movie.MovieTypeId).MovieTypeName,
                 Name = movie.Name,
-                RateName = movie.RateId.ToString(),
+                RateName = _appDbContext.Rates.SingleOrDefault(x => x.Id == movie.RateId).Code + " - " + _appDbContext.Rates.SingleOrDefault(x => x.Id == movie.RateId).Description,
                 Trailer = movie.Trailer,
                 Schedules = _appDbContext.Schedules.Where(x => x.MovieId == movie.Id).Select(x => _converter.ConvertDt(x))
             };
