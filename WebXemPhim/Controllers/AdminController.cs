@@ -19,10 +19,20 @@ namespace WebXemPhim.Controllers
         private readonly ISeatServices seatServices;
         private readonly IMovieServices movieServices;
         private readonly IFoodServices foodServices;
+        private readonly IScheduleServices scheduleServices;
         private readonly IBannerServices bannerServices;
         private readonly IPromotionServices promotionServices;
         private readonly IRankCustomerServices rankCustomerServices;
-        public AdminController(ICinemaServices cinemaServices, IRoomServices roomServices, ISeatServices seatServices,IMovieServices movieServices, IFoodServices foodServices, IBannerServices bannerServices, IPromotionServices promotionServices, IRankCustomerServices rankCustomerServices)
+        private readonly ITicketServices ticketServices;
+        public AdminController(ICinemaServices cinemaServices,
+            IScheduleServices scheduleServices, 
+            IRoomServices roomServices,
+            ISeatServices seatServices,
+            IMovieServices movieServices, ITicketServices ticketServices,
+            IFoodServices foodServices, 
+            IBannerServices bannerServices, 
+            IPromotionServices promotionServices, 
+            IRankCustomerServices rankCustomerServices)
         {
             this.cinemaServices = cinemaServices;
             this.roomServices = roomServices;
@@ -32,6 +42,8 @@ namespace WebXemPhim.Controllers
             this.bannerServices = bannerServices;
             this.promotionServices = promotionServices;
             this.rankCustomerServices = rankCustomerServices;
+            this.scheduleServices = scheduleServices;
+            this.ticketServices = ticketServices;
         }
         [HttpPost("CreateCinema")]
         [Authorize(Roles = "Admin")]
@@ -53,9 +65,9 @@ namespace WebXemPhim.Controllers
         }
         [HttpPost("CreateRoom")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> CreateRoom( int cinemaId, Requests_CreateRoom requests)
+        public async Task<IActionResult> CreateRoom(Requests_CreateRoom requests)
         {
-            return Ok(await roomServices.CreateRoom(cinemaId, requests));
+            return Ok(await roomServices.CreateRoom(requests));
         }
         [HttpPost("CreateListRoom")]
         [Authorize(Roles = "Admin")]
@@ -63,13 +75,13 @@ namespace WebXemPhim.Controllers
         {
             return Ok(roomServices.CreateListRoom(cinemaId, requests));
         }
-        [HttpPost("UpdateRoom")]
+        [HttpPut("UpdateRoom")]
         [Authorize(Roles = "Admin")]
         public IActionResult UpdateRoom(Requests_UpdateRoom requests)
         {
             return Ok(roomServices.UpdateRoom(requests));
         }
-        [HttpPut("DeleteRoom")]
+        [HttpPut("DeleteRoom/{roomId}")]
         [Authorize(Roles = "Admin")]
         public IActionResult DeleteRoom(int roomId)
         {
@@ -81,7 +93,7 @@ namespace WebXemPhim.Controllers
         {
             return Ok(seatServices.CreateSeat(roomId, requests));
         }
-        [HttpPost("CreateListSeat")]
+        [HttpPost("CreateListSeat/{roomId}")]
         [Authorize(Roles = "Admin")]
         public IActionResult CreateListSeat(int roomId, [FromBody] List<Requests_CreateSeat> requests)
         {
@@ -133,9 +145,9 @@ namespace WebXemPhim.Controllers
             return Ok(await foodServices.CreateFood(requests));
         }
         
-        [HttpPut("DeleteMovieType")]
+        [HttpPut("DeleteMovieType/{movietypeId}")]
         [Authorize(Roles = "Admin")]
-        public IActionResult DeleteMovieType([FromBody] int movietypeId)
+        public IActionResult DeleteMovieType(int movietypeId)
         {
             return Ok(movieServices.DeleteMovieType(movietypeId));
         }
@@ -230,6 +242,21 @@ namespace WebXemPhim.Controllers
         {
             return Ok(await bannerServices.GetAllBanners(pageSize, pageNumber));
         }
+        [HttpGet("GetAllRooms")]
+        public async Task<IActionResult> GetAllRooms(int pageSize = 10, int pageNumber = 1)
+        {
+            return Ok(await roomServices.GetAllRoom(pageSize, pageNumber));
+        }
+        [HttpGet("GetRoomById/{roomId}")]
+        public async Task<IActionResult> GetRoomById([FromRoute] int roomId)
+        {
+            return Ok(await roomServices.GetRoomById(roomId));
+        }
+        [HttpGet("GetSchedulesById/{schId}")]
+        public async Task<IActionResult> GetSchedulesById([FromRoute] int schId)
+        {
+            return Ok(await scheduleServices.GetSchedulesById(schId));
+        }
         [HttpGet("GetAllBannersNoPagination")]
         public async Task<IActionResult> GetAllBannersNoPagination()
         {
@@ -239,6 +266,26 @@ namespace WebXemPhim.Controllers
         public async Task<IActionResult> GetAllMovieTypesNoPagination()
         {
             return Ok(movieServices.GetAllMovieTypeNoPagination());
+        }
+        [HttpGet("GetAllRoomNoPagination")]
+        public async Task<IActionResult> GetAllRoomNoPagination()
+        {
+            return Ok(roomServices.GetAllRoomNoPagination());
+        }
+        [HttpGet("GetAllMovieNoPagination")]
+        public async Task<IActionResult> GetAllMovieNoPagination()
+        {
+            return Ok(movieServices.GetAllMovieNoPagination());
+        }
+        [HttpGet("GetAllTicketBySchedulesId/{schedulesId}")]
+        public async Task<IActionResult> GetAllTicketBySchedulesId(int schedulesId)
+        {
+            return Ok(await ticketServices.GetAllTicketNoPagination(schedulesId));
+        }
+        [HttpGet("GetAllCinemaNoPagination")]
+        public async Task<IActionResult> GetAllCinemaNoPagination()
+        {
+            return Ok(cinemaServices.GetAllCinemaNoPagination());
         }
         [HttpGet("GetAllRateNoPagination")]
         public async Task<IActionResult> GetAllRateNoPagination()

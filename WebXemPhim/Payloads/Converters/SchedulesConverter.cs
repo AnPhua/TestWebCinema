@@ -20,7 +20,6 @@ namespace WebXemPhim.Payloads.Converters
                 EndAt = schedule.EndAt,
                 Code = schedule.Code,
                 Name = schedule.Name,
-                Price = schedule.Price,
                 RoomName = _appDbContext.Rooms.SingleOrDefault(x => x.Id == schedule.RoomId).Name
             };
         }

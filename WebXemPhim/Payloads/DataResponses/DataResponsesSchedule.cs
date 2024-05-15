@@ -2,7 +2,6 @@
 {
     public class DataResponsesSchedule : DataResponsesId
     {
-        public double Price { get; set; }
         public DateTime StartAt { get; set; }
         public DateTime EndAt { get; set; }
         public string Code { get; set; }

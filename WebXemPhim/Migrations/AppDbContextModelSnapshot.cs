@@ -579,9 +579,6 @@ namespace WebXemPhim.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<double>("Price")
-                        .HasColumnType("float");
-
                     b.Property<int>("RoomId")
                         .HasColumnType("int");
 

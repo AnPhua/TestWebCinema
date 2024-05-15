@@ -131,8 +131,12 @@ namespace WebXemPhim.Services.Implements
             var result = Pagination.GetPagedData(query, pageSize, pageNumber);
             return result;
         }
+        public IEnumerable<Cinema> GetAllCinemaNoPagination()
+        {
+            return _appDbContext.Cinemas.AsQueryable();
+        }
 
-   
+
     }
 
 }

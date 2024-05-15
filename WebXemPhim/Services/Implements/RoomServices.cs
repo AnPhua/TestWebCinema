@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using WebXemPhim.Entities;
 using WebXemPhim.Handle.Generate;
+using WebXemPhim.Handle.HandlePagination;
 using WebXemPhim.Payloads.Converters;
 using WebXemPhim.Payloads.DataRequests;
 using WebXemPhim.Payloads.DataResponses;
@@ -53,27 +54,27 @@ namespace WebXemPhim.Services.Implements
             return list;
         }
 
-        public async Task<ResponseObject<DataResponsesRoom>> CreateRoom(int cinemaId, Requests_CreateRoom requests)
+        public async Task<ResponseObject<DataResponsesRoom>> CreateRoom(Requests_CreateRoom requests)
         {
-            var cinema = await _appDbContext.Cinemas.SingleOrDefaultAsync(x => x.Id == cinemaId);
+            var cinema =  _appDbContext.Cinemas.Find(requests.CinemaId);
             if (cinema == null)
             {
-                return _responseRoom.ResponseFail(StatusCodes.Status404NotFound, "Không tìm thấy id của rạp", null);
+                return _responseRoom.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy Id Của Rạp", null);
             }
             Room room = new Room
             {
                 Capacity = requests.Capacity,
-                CinemaId = cinemaId,
+                CinemaId = requests.CinemaId,
                 Code = GenerateCode.GenerateCodes(),
                 Description = requests.Description,
                 Name = requests.Name,
-                Type = requests.Type
+                Type = requests.Type,
             };
             await _appDbContext.Rooms.AddAsync(room);
             await _appDbContext.SaveChangesAsync();
             room.Seats = requests.Request_CreateSeats == null ? null : _seatServices.CreateListSeat(room.Id, requests.Request_CreateSeats);
    
-            return _responseRoom.ResponseSucess("Thêm ghế thành công", _roomConverter.ConvertDt(room));
+            return _responseRoom.ResponseSucess("Thêm Phòng Thành Công", _roomConverter.ConvertDt(room));
         }
 
         public string DeleteRoom(int roomId)
@@ -114,6 +115,25 @@ namespace WebXemPhim.Services.Implements
             _appDbContext.SaveChanges();
 
             return _responseRoom.ResponseSucess("Cập nhật thông tin phòng thành công", _roomConverter.ConvertDt(room));
+        }
+        public async Task<PageResult<DataResponsesRoom>> GetAllRoom(int pageSize, int pageNumber)
+        {
+            var query = _appDbContext.Rooms.Where(x=>x.IsActive == true).Select(x => _roomConverter.ConvertDt(x));
+            var result = Pagination.GetPagedData(query, pageSize, pageNumber);
+            return result;
+        }
+        public async Task<ResponseObject<DataResponsesRoom>> GetRoomById(int roomId)
+        {
+            var result = await _appDbContext.Rooms.SingleOrDefaultAsync(x => x.Id == roomId);
+            if (result == null)
+            {
+                return _responseRoom.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy Room Id", null);
+            }
+            return _responseRoom.ResponseSucess("Lấy Dữ Liệu Thành Công", _roomConverter.ConvertDt(result));
+        }
+        public IEnumerable<Room> GetAllRoomNoPagination()
+        {
+            return _appDbContext.Rooms.Where(x => x.IsActive == true).AsQueryable();
         }
     }
 }

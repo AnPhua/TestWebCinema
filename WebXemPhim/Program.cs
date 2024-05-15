@@ -23,6 +23,8 @@ using WebXemPhim.Payloads.Responses;
 using WebXemPhim.Payloads.Converters;
 using MovieManagement.Services.Implements;
 using MovieManagement.Services.Interfaces;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 public class Program
 {
@@ -91,7 +93,19 @@ public class Program
         builder.Services.AddSingleton<BillFoodConverter>();
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddControllers();
-        builder.Services.AddRazorPages();
+       // builder.Services.AddControllers()
+//.AddJsonOptions(options =>
+//{
+//options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+         //       options.JsonSerializerOptions.MaxDepth = 32;
+//});
+        //builder.Services.AddRazorPages();
+        //JsonSerializerOptions options = new()
+        //{
+        //    ReferenceHandler = ReferenceHandler.IgnoreCycles,
+        //    WriteIndented = true
+        //};
+        //builder.Services.AddControllers().AddJsonOptions(x =>x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve);
         builder.Services.AddScoped<AuthServices>();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();

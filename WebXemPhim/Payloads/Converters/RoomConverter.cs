@@ -23,6 +23,8 @@ namespace WebXemPhim.Payloads.Converters
                 Description = room.Description,
                 Name = room.Name,
                 Type = room.Type,
+                CinemaName = _appDbContext.Cinemas.SingleOrDefault(x => x.Id == room.CinemaId).NameOfCinema,
+                Code = room.Code,
                 DataResponseSeats = _appDbContext.Seats.Where(x => x.RoomId == room.Id).Select(x => _seatConverter.ConvertDt(x)).AsQueryable(),
                 DataResponseSchedules = _appDbContext.Schedules.Where(x => x.RoomId == room.Id).Select(x => _scheduleConverter.ConvertDt(x)).AsQueryable()
             };

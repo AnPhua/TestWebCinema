@@ -24,56 +24,87 @@ namespace WebXemPhim.Services.Implements
             var room = await _appDbContext.Rooms.SingleOrDefaultAsync(x => x.Id == request.RoomId);
             if (room == null)
             {
-                return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Không tìm thấy phòng", null);
+                return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy Phòng", null);
             }
+
             var movie = await _appDbContext.Movies.SingleOrDefaultAsync(x => x.Id == request.MovieId);
             if (movie == null)
             {
-                return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Không tìm thấy thông tin", null);
+                return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy Phim", null);
             }
-            var schedule = new Schedule();
-            schedule.RoomId = room.Id;
-            schedule.MovieId = movie.Id;
-            schedule.Code = DateTime.UtcNow.Ticks.ToString() + "abc" + new Random().Next(1000, 9999);
-            schedule.StartAt = request.StartAt;
-            schedule.EndAt = request.EndAt;
-            schedule.Price = request.Price;
-            schedule.Name = request.Name;
-            if (_appDbContext.Schedules.Any(x => !((request.StartAt < x.StartAt && request.EndAt < x.StartAt) || (request.StartAt > x.EndAt && request.EndAt > x.EndAt)) && x.RoomId == request.RoomId))
+
+            var endAt = request.StartAt.AddMinutes(movie.MovieDuration + 30);
+
+
+            if (_appDbContext.Schedules
+                .Any(x => !((request.StartAt < x.StartAt && endAt < x.StartAt) || (request.StartAt > x.EndAt && endAt > x.EndAt)) && x.RoomId == request.RoomId && x.IsActive == true))
             {
-                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Lịch chiếu bị trùng", null);
+                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Lịch Chiếu Bị Trùng", null);
             }
+
+            var schedule = new Schedule
+            {
+                RoomId = room.Id,
+                MovieId = movie.Id,
+                Code = DateTime.Now.Ticks.ToString() + "schmov" + new Random().Next(1000, 9999),
+                StartAt = request.StartAt,
+                EndAt = endAt, 
+                Name = "Phim : "+ movie.Name,
+            };
+
             await _appDbContext.Schedules.AddAsync(schedule);
             await _appDbContext.SaveChangesAsync();
-            return _responseObject.ResponseSucess("Thêm lịch trình thành công", _converter.ConvertDt(schedule));
+
+            return _responseObject.ResponseSucess("Thêm Suất Chiếu Thành Công", _converter.ConvertDt(schedule));
         }
+
 
         public async Task<ResponseObject<DataResponsesSchedule>> UpdateSchedule(Requests_UpdateSchedule request)
         {
             var schedule = await _appDbContext.Schedules.SingleOrDefaultAsync(x => x.Id == request.ScheduleId);
             if (schedule == null)
             {
-                return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Lịch trình không tồn tại", null);
+                return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Suất Chiếu Không Tồn Tại", null);
             }
+
             if (!_appDbContext.Rooms.Any(x => x.Id == request.RoomId))
             {
-                return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Không tìm thấy phòng", null);
+                return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy Phòng", null);
             }
-            if (!_appDbContext.Movies.Any(x => x.Id == request.MovieId))
+            var movie = await _appDbContext.Movies.SingleOrDefaultAsync(x => x.Id == request.MovieId);
+            if (movie == null)
             {
-                return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Không tìm thấy phim", null);
+                return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy Phim", null);
             }
+
+            var newDuration = await _appDbContext.Movies
+                .Where(x => x.Id == request.MovieId)
+                .Select(x => x.MovieDuration)
+                .FirstOrDefaultAsync();
+
+            var newEndAt = request.StartAt.AddMinutes(newDuration + 30);
+
+            
+
+            if (_appDbContext.Schedules
+                .Any(x => !((request.StartAt < x.StartAt && newEndAt < x.StartAt) || (request.StartAt > x.EndAt && newEndAt > x.EndAt)) && x.RoomId == request.RoomId && x.IsActive == true))
+            {
+                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Lịch Chiếu Bị Trùng", null);
+            }
+
             schedule.StartAt = request.StartAt;
-            schedule.Price = request.Price;
-            schedule.Price = request.Price;
-            schedule.Name = request.Name;
-            schedule.Code = DateTime.UtcNow.Ticks.ToString() + "abc" + new Random().Next(100, 999);
+            schedule.Name = "Phim : " + movie.Name;
+            schedule.Code = DateTime.Now.Ticks.ToString() + "schmov" + new Random().Next(100, 999);
             schedule.MovieId = request.MovieId;
             schedule.RoomId = request.RoomId;
+            schedule.EndAt = newEndAt;
+
             _appDbContext.Schedules.Update(schedule);
             await _appDbContext.SaveChangesAsync();
-            return _responseObject.ResponseSucess("Cập nhật thông tin lịch trình thành công", _converter.ConvertDt(schedule));
+            return _responseObject.ResponseSucess("Cập Nhật Thông Tin Suất Chiếu Thành Công", _converter.ConvertDt(schedule));
         }
+
+
 
         public async Task<PageResult<DataResponsesSchedule>> GetSchedulesByMovie(int movieId, int pageSize, int pageNumber)
         {
@@ -84,7 +115,7 @@ namespace WebXemPhim.Services.Implements
 
         public async Task<PageResult<DataResponsesSchedule>> GetAlls(InputScheduleData input, int pageSize, int pageNumber)
         {
-            var query = await _appDbContext.Schedules.Include(x => x.Room).ToListAsync();
+            var query = await _appDbContext.Schedules.Where(x => x.IsActive == true).Include(x => x.Room).ToListAsync();
             if (input.RoomId.HasValue)
             {
                 query = query.Where(x => x.RoomId == input.RoomId).ToList();
@@ -93,7 +124,7 @@ namespace WebXemPhim.Services.Implements
             return result;
         }
 
-        public async Task<string> DeleteSchedule(int scheduleId)
+        public async Task<ResponseObject<DataResponsesSchedule>> DeleteSchedule(int scheduleId)
         {
             var schedule = await _appDbContext.Schedules.SingleOrDefaultAsync(x => x.Id == scheduleId);
             if (schedule.EndAt < DateTime.Now && schedule != null)
@@ -101,9 +132,9 @@ namespace WebXemPhim.Services.Implements
                 schedule.IsActive = false;
                 _appDbContext.Schedules.Update(schedule);
                 await _appDbContext.SaveChangesAsync();
-                return "Xóa bản ghi thành công";
+                return _responseObject.ResponseSucess("Xóa Suất Chiếu Thành Công!", _converter.ConvertDt(schedule));
             }
-            return "Lịch trình không tồn tại";
+            return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Chưa Hết Giờ Chiếu ,Không Thể Xóa!", null);
 
         }
 
@@ -119,6 +150,15 @@ namespace WebXemPhim.Services.Implements
             return result;
         }
 
+        public async Task<ResponseObject<DataResponsesSchedule>> GetSchedulesById(int schId)
+        {
+            var result = await _appDbContext.Schedules.SingleOrDefaultAsync(x => x.Id == schId);
+            if (result == null)
+            {
+                return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy Id Lịch Chie", null);
+            }
+            return _responseObject.ResponseSucess("Lấy Dữ Liệu Thành Công", _converter.ConvertDt(result));
+        }
     }
 }
 

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WebXemPhim.Entities;
+using WebXemPhim.Handle.HandlePagination;
 using WebXemPhim.Payloads.Converters;
 using WebXemPhim.Payloads.DataRequests;
 using WebXemPhim.Payloads.DataResponses;
@@ -89,7 +90,7 @@ namespace WebXemPhim.Services.Implements
             }
 
              _appDbContext.SaveChanges();
-            return responseObject.ResponseSucess("Cập nhật thông tin ghế trong phòng thành công", _roomConverter.ConvertDt(room));
+            return responseObject.ResponseSucess("Cập Nhật Thông Tin Ghế Trong Phòng Thành Công", _roomConverter.ConvertDt(room));
         }
 
         public string DeleteSeat(int seatId)
@@ -100,6 +101,12 @@ namespace WebXemPhim.Services.Implements
             _appDbContext.Seats.Update(seatdelete);
             _appDbContext.SaveChanges();
             return "Xóa Ghế Thành Công!";
+        }
+        public async Task<PageResult<DataResponsesRoom>> GetAllSeat(int pageSize, int pageNumber)
+        {
+            var query = _appDbContext.Rooms.Where(x => x.IsActive == true).Select(x => _roomConverter.ConvertDt(x));
+            var result = Pagination.GetPagedData(query, pageSize, pageNumber);
+            return result;
         }
     }
 }

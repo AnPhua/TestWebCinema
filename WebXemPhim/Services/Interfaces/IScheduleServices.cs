@@ -11,7 +11,8 @@ namespace WebXemPhim.Services.Interfaces
         Task<ResponseObject<DataResponsesSchedule>> UpdateSchedule(Requests_UpdateSchedule request);
         Task<PageResult<DataResponsesSchedule>> GetSchedulesByMovie(int movieId, int pageSize, int pageNumber);
         Task<PageResult<DataResponsesSchedule>> GetAlls(InputScheduleData input, int pageSize, int pageNumber);
-        Task<string> DeleteSchedule(int scheduleId);
+        Task<ResponseObject<DataResponsesSchedule>> DeleteSchedule(int scheduleId);
         Task<PageResult<DataResponsesSchedule>> GetSchedulesByDay(DateTime startAt, int pageSize, int pageNumber);
+        Task<ResponseObject<DataResponsesSchedule>> GetSchedulesById(int schId);
     }
 }

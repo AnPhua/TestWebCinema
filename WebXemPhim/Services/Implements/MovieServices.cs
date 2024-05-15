@@ -337,7 +337,7 @@ namespace WebXemPhim.Services.Implements
         }
         public async Task<PageResult<DataResponsesMovieType>> GetAllMovieTypes(int pageSize, int pageNumber)
         {
-            var query = _appDbContext.MovieTypes.Include(x => x.Movies).AsNoTracking().Select(x => _movieTypeConverter.ConvertDt(x));
+            var query = _appDbContext.MovieTypes.Include(x => x.Movies).Where(x=>x.IsActive == true).AsNoTracking().Select(x => _movieTypeConverter.ConvertDt(x));
             var result = Pagination.GetPagedData(query, pageSize, pageNumber);
             return result;
         }
@@ -408,6 +408,11 @@ namespace WebXemPhim.Services.Implements
         public IEnumerable<Rate> GetAllRateTypeNoPagination()
         {
             return _appDbContext.Rates.AsQueryable();
+        }
+
+        public IEnumerable<Movie> GetAllMovieNoPagination()
+        {
+            return _appDbContext.Movies.Where(x=>x.IsActive == true).AsQueryable();
         }
     }
 }

@@ -23,5 +23,18 @@ namespace WebXemPhim.Payloads.Converters
                 SeatTypeName = _appDbContext.SeatTypes.SingleOrDefault(x => x.Seats.Any(y => y.Id == seat.Id)).NameType
             };
         }
+        public DataResponsesSeat ConvertlistDt(Seat seat)
+        {
+
+            return new DataResponsesSeat
+            {
+                Id = seat.Id,
+                Line = seat.Line,
+                Number = seat.Number,
+                RoomName = _appDbContext.Rooms.SingleOrDefault(x => x.Seats.Any(y => y.Id == seat.Id)).Name,
+                SeatStatusName = _appDbContext.SeatsStatus.SingleOrDefault(x => x.Seats.Any(y => y.Id == seat.Id)).NameStatus,
+                SeatTypeName = _appDbContext.SeatTypes.SingleOrDefault(x => x.Seats.Any(y => y.Id == seat.Id)).NameType
+            };
+        }
     }
 }

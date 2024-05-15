@@ -27,6 +27,7 @@ namespace WebXemPhim.Services.Interfaces
         Task<PageResult<DataResponsesMovieType>> GetAllMovieTypes(int pageSize, int pageNumber);
         IEnumerable<MovieType> GetAllMovieTypeNoPagination();
         IEnumerable<Rate> GetAllRateTypeNoPagination();
+        IEnumerable<Movie> GetAllMovieNoPagination();
         Task<ResponseObject<DataResponsesMovieType>> GetMovieTypeById(int movieTypeId);
         Task<PageResult<DataResponsesMovie>> GetAllMovie(InputFilter input, int pageSize, int pageNumber);
         Task<ResponseObject<DataResponsesMovie>> GetMovieById(int movieId);

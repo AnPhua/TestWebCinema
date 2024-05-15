@@ -2,6 +2,7 @@
 {
     public class Requests_CreateRoom
     {
+        public int CinemaId { get; set; }
         public int Capacity { get; set; }
         public int Type { get; set; }
         public string Description { get; set; }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WebXemPhim.Entities;
+using WebXemPhim.Handle.HandlePagination;
 using WebXemPhim.Payloads.Converters;
 using WebXemPhim.Payloads.DataRequests;
 using WebXemPhim.Payloads.DataResponses;
@@ -24,20 +25,36 @@ namespace MovieManagement.Services.Implements
             var seat = await _appDbContext.Seats.SingleOrDefaultAsync(x => x.Id == request.SeatId);
             if (seat == null)
             {
-                return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Không tìm thấy ghế", null);
+                return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy Ghế", null);
             }
             var schedule = await _appDbContext.Schedules.SingleOrDefaultAsync(x => x.Id == scheduleId);
             if(schedule == null)
             {
-                return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Không tìm thấy thông tin", null);
+                return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy Lịch Chiếu", null);
             }
             Ticket ticket = new Ticket();
             ticket.ScheduleId = scheduleId;
             ticket.SeatId = request.SeatId;
-            ticket.Code = "Movie" + DateTime.UtcNow.Ticks.ToString() + new Random().Next(1000, 9999).ToString();
+            ticket.Code = "Movie" + DateTime.Now.Ticks.ToString() + new Random().Next(1000, 9999).ToString();
+            if (seat.SeatTypeId == 1)
+            {
+                ticket.PriceTicket = 45000;
+            }
+            else if (seat.SeatTypeId == 2)
+            {
+                ticket.PriceTicket = 50000;
+            }
+            else if (seat.SeatTypeId == 3)
+            {
+                ticket.PriceTicket = 120000;
+            }
+            else
+            { 
+                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Loại Ghế Không Hợp Lệ", null);
+            }
             await _appDbContext.Tickets.AddAsync(ticket);
             await _appDbContext.SaveChangesAsync();
-            return _responseObject.ResponseSucess("Tạo vé thành công", _ticketConverter.ConvertDt(ticket));
+            return _responseObject.ResponseSucess("Tạo Vé Thành Công", _ticketConverter.ConvertDt(ticket));
         }
 
         public async Task<ResponseObject<DataResponsesTicket>> UpdateTicket(Requests_UpdateTicket request)
@@ -78,5 +95,14 @@ namespace MovieManagement.Services.Implements
             _appDbContext.SaveChanges();
             return list;
         }
+        public async Task<DataResponsesTicket[]> GetAllTicketNoPagination(int scheduleId)
+        {
+            var tickets = await _appDbContext.Tickets
+        .Where(x => x.ScheduleId == scheduleId)
+        .Select(x => _ticketConverter.ConvertDtandSeaType(x))
+        .ToArrayAsync();
+            return tickets;
+        }
+
     }
 }

@@ -19,17 +19,20 @@ namespace WebXemPhim.Controllers
         private readonly IBillServices _billService;
         private readonly ITicketServices _ticketService;
         private readonly IMovieServices _movieServices;
-        public StaffController(ICinemaServices _iCinemaService,IMovieServices _iMovieService, IScheduleServices _iScheduleService, IBillServices _billService, IMovieServices movieServices)
+        public StaffController(ICinemaServices _iCinemaService,
+            IMovieServices _iMovieService, 
+            IScheduleServices _iScheduleService, IBillServices _billService, IMovieServices movieServices, ITicketServices _ticketService)
         {
             this._iCinemaService = _iCinemaService;
             this._iMovieService = _iMovieService;
             this._iScheduleService = _iScheduleService;
             this._billService = _billService;
             _movieServices = movieServices;
+            this._ticketService = _ticketService;
         }
-        [HttpPost("CreateTicket")]
+        [HttpPost("CreateTicket/{scheduleId}")]
         [Authorize(Roles = "Admin,Censor")]
-        public async Task<IActionResult> CreateTicket(int scheduleId, Requests_CreateTicket request)
+        public async Task<IActionResult> CreateTicket(int scheduleId,Requests_CreateTicket request)
         {
             return Ok(await _ticketService.CreateTicket(scheduleId, request));
         }
@@ -102,7 +105,7 @@ namespace WebXemPhim.Controllers
         }
         [HttpPut("deleteSchedule/{scheduleId}")]
         [Authorize(Roles = "Admin,Censor")]
-        public async Task<IActionResult> DeleteSchedule([FromRoute] int scheduleId)
+        public async Task<IActionResult> DeleteSchedule(int scheduleId)
         {
             return Ok(await _iScheduleService.DeleteSchedule(scheduleId));
         }

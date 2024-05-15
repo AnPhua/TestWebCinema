@@ -15,5 +15,6 @@ namespace WebXemPhim.Services.Interfaces
         Task<PageResult<DataResponsesRoom>> GetListRoomInCinema(int pageSize, int pageNumber);
         Task<PageResult<DataResponsesCinema>> GetListCinema(int pageSize, int pageNumber);
         Task<PageResult<DataResponsesCinema>> GetCinemaByMovie(int movieId, int pageSize, int pageNumber);
+        IEnumerable<Cinema> GetAllCinemaNoPagination();
     }
 }
