@@ -268,6 +268,11 @@ namespace WebXemPhim.Controllers
         {
             return Ok( bannerServices.GetAllBannersNoPagination());
         }
+        [HttpGet("GetSeatTypes")]
+        public async Task<IActionResult> GetSeatTypes()
+        {
+            return Ok(seatServices.GetSeatTypes());
+        }
         [HttpGet("GetAllMovieTypesNoPagination")]
         public async Task<IActionResult> GetAllMovieTypesNoPagination()
         {

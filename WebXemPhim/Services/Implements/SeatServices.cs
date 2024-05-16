@@ -205,5 +205,10 @@ namespace WebXemPhim.Services.Implements
             var result = Pagination.GetPagedData(query, pageSize, pageNumber);
             return result;
         }
+
+        public IEnumerable<SeatType> GetSeatTypes()
+        {
+            return _appDbContext.SeatTypes.AsQueryable();
+        }
     }
 }
