@@ -87,7 +87,7 @@ namespace WebXemPhim.Controllers
         {
             return Ok(roomServices.DeleteRoom(roomId));
         }
-        [HttpPost("CreateSeat")]
+        [HttpPost("CreateSeat/{room}")]
         [Authorize(Roles = "Admin")]
         public IActionResult CreateSeat(int roomId, Requests_CreateSeat requests)
         {
@@ -98,6 +98,12 @@ namespace WebXemPhim.Controllers
         public IActionResult CreateListSeat(int roomId, [FromBody] List<Requests_CreateSeat> requests)
         {
             return Ok(seatServices.CreateListSeat(roomId, requests));
+        }
+        [HttpPost("CreateListTicket/{scheduleId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CreateListTicket(int scheduleId, [FromBody] List<Requests_CreateTicket> requests)
+        {
+            return Ok(await ticketServices.CreateListTicket(scheduleId, requests));
         }
         [HttpPost("UpdateSeat")]
         [Authorize(Roles = "Admin")]

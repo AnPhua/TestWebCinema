@@ -17,11 +17,16 @@ namespace WebXemPhim.Services.Implements
         private readonly ISeatServices _seatServices;
         private readonly RoomConverter _roomConverter;
         private readonly ResponseObject<DataResponsesRoom> _responseRoom;
-        public RoomServices(ISeatServices seatServices, ResponseObject<DataResponsesRoom> responseRoom, RoomConverter roomConverter) 
+        private readonly SeatConverter _seatConverter;
+        private readonly SchedulesConverter _scheduleConverter;
+        public RoomServices(ISeatServices seatServices, ResponseObject<DataResponsesRoom> responseRoom, 
+            RoomConverter roomConverter,SeatConverter seatConverter , SchedulesConverter schedulesConverter) 
         {
             _seatServices = seatServices;
             _responseRoom = responseRoom;
             _roomConverter = roomConverter;
+            _seatConverter = seatConverter;
+            _scheduleConverter = schedulesConverter;
         }
 
         public List<Room> CreateListRoom(int cinemaId, List<Requests_CreateRoom> requests)
@@ -46,7 +51,6 @@ namespace WebXemPhim.Services.Implements
                 };
 
                 _appDbContext.Rooms.Add(room);
-                room.Seats = _seatServices.CreateListSeat(room.Id, request.Request_CreateSeats);
                 list.Add(room);
             }
             _appDbContext.SaveChanges();
@@ -72,7 +76,6 @@ namespace WebXemPhim.Services.Implements
             };
             await _appDbContext.Rooms.AddAsync(room);
             await _appDbContext.SaveChangesAsync();
-            room.Seats = requests.Request_CreateSeats == null ? null : _seatServices.CreateListSeat(room.Id, requests.Request_CreateSeats);
    
             return _responseRoom.ResponseSucess("Thêm Phòng Thành Công", _roomConverter.ConvertDt(room));
         }
@@ -109,7 +112,6 @@ namespace WebXemPhim.Services.Implements
                 _appDbContext.Seats.Remove(seat);
             }
 
-            room.Seats = requests.Request_UpdateSeats == null ? null : _seatServices.CreateListSeat(room.Id, requests.Request_UpdateSeats);
 
             _appDbContext.Rooms.Update(room);
             _appDbContext.SaveChanges();
@@ -118,10 +120,13 @@ namespace WebXemPhim.Services.Implements
         }
         public async Task<PageResult<DataResponsesRoom>> GetAllRoom(int pageSize, int pageNumber)
         {
-            var query = _appDbContext.Rooms.Where(x=>x.IsActive == true).Select(x => _roomConverter.ConvertDt(x));
+            var query = _appDbContext.Rooms.Where(x => x.IsActive == true).AsNoTracking().Select(x => _roomConverter.ConvertDtforSeat(x));
             var result = Pagination.GetPagedData(query, pageSize, pageNumber);
             return result;
         }
+
+
+
         public async Task<ResponseObject<DataResponsesRoom>> GetRoomById(int roomId)
         {
             var result = await _appDbContext.Rooms.SingleOrDefaultAsync(x => x.Id == roomId);

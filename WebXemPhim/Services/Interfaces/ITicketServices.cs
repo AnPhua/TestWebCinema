@@ -9,7 +9,7 @@ namespace WebXemPhim.Services.Interfaces
     {
         Task<ResponseObject<DataResponsesTicket>> CreateTicket(int scheduleId, Requests_CreateTicket request);
         Task<ResponseObject<DataResponsesTicket>> UpdateTicket(Requests_UpdateTicket request);
-        List<Ticket> CreateListTicket(int scheduleId, List<Requests_CreateTicket> requests);
+        Task<List<Ticket>> CreateListTicket(int scheduleId, List<Requests_CreateTicket> requests);
         Task<DataResponsesTicket[]> GetAllTicketNoPagination(int scheduleId);
     }
 }

@@ -21,49 +21,146 @@ namespace WebXemPhim.Services.Implements
             this._roomConverter = _roomConverter;
             this._responseObject = _responseObject;
         }
-        public List<Seat> CreateListSeat(int roomId, List<Requests_CreateSeat> requests)
+        //public async Task<List<Seat>> CreateListSeat(int roomId, List<Requests_CreateSeat> requests)
+        //{
+        //    var room = await _appDbContext.Rooms.SingleOrDefaultAsync(x => x.Id == roomId);
+        //    if (room == null)
+        //    {
+        //        throw new ArgumentNullException("Lịch chiếu không tồn tại");
+        //    }
+
+        //    List<Seat> listseat = new List<Seat>();
+
+        //    var groupedRequests = requests.GroupBy(r => r.Line);
+
+        //    foreach (var group in groupedRequests)
+        //    {
+        //        var line = group.Key;
+        //        var seatNumbers = await _appDbContext.Seats
+        //                                             .Where(x => x.RoomId == roomId && x.Line == line)
+        //                                             .Select(x => x.Number)
+        //                                             .ToListAsync();
+
+        //        var maxNumber = seatNumbers.DefaultIfEmpty(0).Max();  
+
+        //        foreach (var request in group)
+        //        {
+        //            if (maxNumber > 20)
+        //            {
+        //                throw new InvalidOperationException($"Tối Đa Mỗi Hàng Chỉ 20 Ghế tại hàng {line}");
+        //            }
+
+        //            Seat seat = new Seat()
+        //            {
+        //                Line = line,
+        //                Number = ++maxNumber,
+        //                SeatStatusId = 1,
+        //                SeatTypeId = request.SeatTypeId,
+        //                RoomId = roomId,
+        //                IsActive = true
+        //            };
+
+        //            listseat.Add(seat);
+        //        }
+        //    }
+
+        //    await _appDbContext.Seats.AddRangeAsync(listseat);
+        //    await _appDbContext.SaveChangesAsync();
+        //    return listseat;
+        //}
+        public async Task<List<Seat>> CreateListSeat(int roomId, List<Requests_CreateSeat> requests)
         {
-            var room = _appDbContext.Rooms.SingleOrDefault(x => x.Id == roomId);
-            if (room is null)
+            var room = await _appDbContext.Rooms.SingleOrDefaultAsync(x => x.Id == roomId);
+            if (room == null)
             {
-                return null;
+                throw new ArgumentNullException("Phòng không tồn tại");
             }
+
             List<Seat> listseat = new List<Seat>();
-            foreach (var request in requests)
+
+            var groupedRequests = requests.GroupBy(r => r.Line);
+
+            foreach (var group in groupedRequests)
             {
-                Seat seat = new Seat();
-                seat.SeatStatusId = 1;
-                seat.Line = request.Line;
-                seat.Number = request.Number;
-                seat.RoomId = roomId;
-                seat.SeatTypeId = request.SeatTypeId;
-                seat.IsActive = true;
-                listseat.Add(seat);
+                var line = group.Key;
+                var existingSeats = await _appDbContext.Seats
+                                                       .Where(x => x.RoomId == roomId && x.Line == line)
+                                                       .ToListAsync();
+
+                var maxNumber = existingSeats.Select(x => x.Number).DefaultIfEmpty(0).Max();
+                var doubleSeatCount = existingSeats.Count(x => x.SeatTypeId == 3);
+
+                foreach (var request in group)
+                {
+                    if (request.SeatTypeId == 3 && doubleSeatCount >= 4)
+                    {
+                        throw new InvalidOperationException($"Tối Đa Mỗi Hàng Chỉ 4 Đối Với Ghế Đôi Ở Hàng {line}");
+                    }
+
+                    if (maxNumber > 14)
+                    {
+                        throw new InvalidOperationException($"Tối Đa Mỗi Hàng Chỉ 14 Ghế Ở Hàng {line}");
+                    }
+
+                    Seat seat = new Seat()
+                    {
+                        Line = line,
+                        Number = ++maxNumber,
+                        SeatStatusId = 1,
+                        SeatTypeId = request.SeatTypeId,
+                        RoomId = roomId,
+                        IsActive = true
+                    };
+
+                    listseat.Add(seat);
+
+                    if (seat.SeatTypeId == 3)
+                    {
+                        doubleSeatCount++;
+                    }
+                }
             }
-            _appDbContext.Seats.AddRange(listseat);
-            _appDbContext.SaveChanges();
+
+            await _appDbContext.Seats.AddRangeAsync(listseat);
+            await _appDbContext.SaveChangesAsync();
             return listseat;
         }
+
 
         public ResponseObject<DataResponsesSeat> CreateSeat(int roomId, Requests_CreateSeat request)
         {
             var room = _appDbContext.Rooms.SingleOrDefault(x => x.Id == roomId);
             if (room == null)
             {
-                return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Không tìm thấy phòng", null);
+                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Không Tìm Thấy Phòng", null);
             }
+
+            var seatNumbers = _appDbContext.Seats.Where(x => x.RoomId == roomId && x.Line == request.Line)
+                                                 .Select(x => x.Number)
+                                                 .ToList();
+
+            var maxNumber = seatNumbers.DefaultIfEmpty(1).Max();
+
+            if (maxNumber >= 20)
+            {
+                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Tối Đa Mỗi Hàng Chỉ 20 Ghế", null);
+            }
+
             Seat seat = new Seat()
             {
                 Line = request.Line,
-                Number = request.Number,
-                SeatTypeId = request.SeatTypeId,
-                RoomId = roomId,
+                Number = maxNumber + 1,
                 SeatStatusId = 1,
+                SeatTypeId = request.SeatTypeId,
+                RoomId = roomId
+                
             };
+
             _appDbContext.Seats.Add(seat);
             _appDbContext.SaveChanges();
-            return _responseObject.ResponseSucess("Thêm ghế thành công", _seatConverter.ConvertDt(seat));
+            return _responseObject.ResponseSucess("Thêm Ghế Thành Công", _seatConverter.ConvertDt(seat));
         }
+
 
         public ResponseObject<DataResponsesRoom> UpdateSeat(int roomId, List<Requests_UpdateSeats> requests)
         {

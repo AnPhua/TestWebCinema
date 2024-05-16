@@ -5,7 +5,8 @@
         public int Number { get; set; }
         public string SeatStatusName { get; set; }
         public string Line { get; set; }
-        public string RoomName { get; set; }
-        public string SeatTypeName { get; set; }
+        //public string RoomName { get; set; }
+        //public string SeatTypeName { get; set; }
+        public int SeatTypeId { get; set; }
     }
 }
