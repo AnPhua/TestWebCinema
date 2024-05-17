@@ -89,7 +89,7 @@ namespace WebXemPhim.Services.Implements
 
                 var maxNumber = existingSeats.Select(x => x.Number).DefaultIfEmpty(0).Max();
                 var doubleSeatCount = existingSeats.Count(x => x.SeatTypeId == 3);
-
+                bool hasVipOrRegular = existingSeats.Any(x => x.SeatTypeId == 1 || x.SeatTypeId == 2);
                 foreach (var request in group)
                 {
                     if (request.SeatTypeId == 3 && doubleSeatCount >= 4)
@@ -97,9 +97,18 @@ namespace WebXemPhim.Services.Implements
                         throw new InvalidOperationException($"Tối Đa Mỗi Hàng Chỉ 4 Đối Với Ghế Đôi Ở Hàng {line}");
                     }
 
-                    if (maxNumber > 14)
+                    if (maxNumber >= 14)
                     {
                         throw new InvalidOperationException($"Tối Đa Mỗi Hàng Chỉ 14 Ghế Ở Hàng {line}");
+                    }
+                    if (request.SeatTypeId == 3 && hasVipOrRegular)
+                    {
+                        throw new InvalidOperationException($"Không Thể Thêm Ghế Đôi Vào Hàng {line} Vì Đã Có Ghế VIP Hoặc Ghế Thường.");
+                    }
+
+                    if ((request.SeatTypeId == 1 || request.SeatTypeId == 2) && doubleSeatCount > 0)
+                    {
+                        throw new InvalidOperationException($"Không Thể Thêm Ghế VIP Hoặc Ghế Thường Vào Hàng {line} Vì Đã Có Ghế Đôi.");
                     }
 
                     Seat seat = new Seat()
