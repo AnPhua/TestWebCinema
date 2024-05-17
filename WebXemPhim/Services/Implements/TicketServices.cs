@@ -80,41 +80,104 @@ namespace MovieManagement.Services.Implements
             return _responseObject.ResponseSucess("Cập nhật thông tin thành công", _ticketConverter.ConvertDt(ticket));
         }
 
-        public async Task<List<Ticket>> CreateListTicket(int scheduleId, List<Requests_CreateTicket> requests)
+        //public async Task<List<Ticket>> CreateListTicket(int scheduleId, List<Requests_CreateTicket> requests)
+        //{
+        //    var schedule = await _appDbContext.Schedules.SingleOrDefaultAsync(x => x.Id == scheduleId);
+        //    if (schedule == null)
+        //    {
+        //        throw new ArgumentNullException("Lịch chiếu không tồn tại");
+        //    }
+
+        //    List<Ticket> list = new List<Ticket>();
+
+        //    foreach (var request in requests)
+        //    {
+        //        var seat = await _appDbContext.Seats.SingleOrDefaultAsync(x => x.Id == request.SeatId);
+        //        if (seat == null)
+        //        {
+        //            throw new ArgumentException("Không Tìm Thấy Ghế");
+        //        }
+
+        //        if (_appDbContext.Tickets.Any(x => x.SeatId == request.SeatId && x.ScheduleId == scheduleId))
+        //        {
+        //            throw new InvalidOperationException("Không Thể Chọn Trùng Ghế!");
+        //        }
+
+        //        if (seat.RoomId != schedule.RoomId)
+        //        {
+        //            throw new InvalidOperationException("Hai Phòng Chiếu Không Khớp");
+        //        }
+
+        //        Ticket ticket = new Ticket
+        //        {
+        //            ScheduleId = scheduleId,
+        //            SeatId = request.SeatId,
+        //            Code = "Movie" + DateTime.Now.Ticks.ToString() + new Random().Next(1000, 9999).ToString()
+        //        };
+
+        //        switch (seat.SeatTypeId)
+        //        {
+        //            case 1:
+        //                ticket.PriceTicket = 45000;
+        //                break;
+        //            case 2:
+        //                ticket.PriceTicket = 50000;
+        //                break;
+        //            case 3:
+        //                ticket.PriceTicket = 120000;
+        //                break;
+        //            default:
+        //                throw new ArgumentException("Loại Ghế Không Hợp Lệ");
+        //        }
+
+        //        list.Add(ticket);
+        //    }
+
+        //    await _appDbContext.Tickets.AddRangeAsync(list);
+        //    await _appDbContext.SaveChangesAsync();
+        //    return list;
+        //}
+
+        public async Task<List<Ticket>> CreateListTicket(int scheduleId)
         {
+            // Lấy thông tin lịch chiếu
             var schedule = await _appDbContext.Schedules.SingleOrDefaultAsync(x => x.Id == scheduleId);
             if (schedule == null)
             {
                 throw new ArgumentNullException("Lịch chiếu không tồn tại");
             }
 
+            // Lấy danh sách các ghế trong phòng chiếu
+            var seatsInRoom = await _appDbContext.Seats
+                .Where(x => x.RoomId == schedule.RoomId)
+                .ToListAsync();
+
+            // Lấy danh sách các ghế đã có vé trong lịch chiếu này
+            var existingTickets = await _appDbContext.Tickets
+                .Where(x => x.ScheduleId == scheduleId)
+                .Select(x => x.SeatId)
+                .ToListAsync();
+
+            // Khởi tạo danh sách vé mới
             List<Ticket> list = new List<Ticket>();
 
-            foreach (var request in requests)
+            foreach (var seat in seatsInRoom)
             {
-                var seat = await _appDbContext.Seats.SingleOrDefaultAsync(x => x.Id == request.SeatId);
-                if (seat == null)
+                // Kiểm tra ghế đã được đặt chưa
+                if (existingTickets.Contains(seat.Id))
                 {
-                    throw new ArgumentException("Không Tìm Thấy Ghế");
+                    continue; // Bỏ qua ghế đã được đặt
                 }
 
-                if (_appDbContext.Tickets.Any(x => x.SeatId == request.SeatId && x.ScheduleId == scheduleId))
-                {
-                    throw new InvalidOperationException("Không Thể Chọn Trùng Ghế!");
-                }
-
-                if (seat.RoomId != schedule.RoomId)
-                {
-                    throw new InvalidOperationException("Hai Phòng Chiếu Không Khớp");
-                }
-
+                // Tạo vé mới
                 Ticket ticket = new Ticket
                 {
                     ScheduleId = scheduleId,
-                    SeatId = request.SeatId,
+                    SeatId = seat.Id,
                     Code = "Movie" + DateTime.Now.Ticks.ToString() + new Random().Next(1000, 9999).ToString()
                 };
 
+                // Đặt giá vé theo loại ghế
                 switch (seat.SeatTypeId)
                 {
                     case 1:
@@ -133,10 +196,13 @@ namespace MovieManagement.Services.Implements
                 list.Add(ticket);
             }
 
+            // Thêm vé mới vào cơ sở dữ liệu
             await _appDbContext.Tickets.AddRangeAsync(list);
             await _appDbContext.SaveChangesAsync();
             return list;
         }
+
+
         public async Task<DataResponsesTicket[]> GetAllTicketNoPagination(int scheduleId)
         {
             var tickets = await _appDbContext.Tickets

@@ -99,11 +99,17 @@ namespace WebXemPhim.Controllers
         {
             return Ok(seatServices.CreateListSeat(roomId, requests));
         }
+        //[HttpPost("CreateListTicket/{scheduleId}")]
+        //[Authorize(Roles = "Admin")]
+        //public async Task<IActionResult> CreateListTicket(int scheduleId, [FromBody] List<Requests_CreateTicket> requests)
+        //{
+        //    return Ok(await ticketServices.CreateListTicket(scheduleId, requests));
+        //}
         [HttpPost("CreateListTicket/{scheduleId}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> CreateListTicket(int scheduleId, [FromBody] List<Requests_CreateTicket> requests)
+        public async Task<IActionResult> CreateListTicket(int scheduleId)
         {
-            return Ok(await ticketServices.CreateListTicket(scheduleId, requests));
+            return Ok(await ticketServices.CreateListTicket(scheduleId));
         }
         [HttpPost("UpdateSeat")]
         [Authorize(Roles = "Admin")]
