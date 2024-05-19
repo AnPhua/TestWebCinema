@@ -93,12 +93,11 @@ public class Program
         builder.Services.AddSingleton<BillFoodConverter>();
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddControllers();
-       // builder.Services.AddControllers()
-//.AddJsonOptions(options =>
-//{
-//options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
-         //       options.JsonSerializerOptions.MaxDepth = 32;
-//});
+        //builder.Services.AddControllers().AddJsonOptions(options =>
+        //{
+        //    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+        //    options.JsonSerializerOptions.MaxDepth = 32;
+        //});
         //builder.Services.AddRazorPages();
         //JsonSerializerOptions options = new()
         //{

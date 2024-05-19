@@ -343,7 +343,7 @@ namespace WebXemPhim.Services.Implements
         }
         public async Task<PageResult<DataResponsesMovie>> GetMovieUnreference(InputDt dt, int pageSize, int pageNumber)
         {
-            var query = _appDbContext.Movies.Include(x => x.MovieType).AsNoTracking().ToList();
+            var query = _appDbContext.Movies.Where(x=>x.IsActive == true).Include(x => x.MovieType).AsNoTracking().ToList();
             if (dt.PremiereDate.HasValue)
             {
                 query = query.Where(x => x.PremiereDate >= dt.PremiereDate).ToList();
@@ -354,7 +354,7 @@ namespace WebXemPhim.Services.Implements
         }
         public async Task<PageResult<DataResponsesMovie>> GetMovieShowing(InputDt dt, int pageSize, int pageNumber)
         {
-            var query = _appDbContext.Movies.Include(x => x.MovieType).AsNoTracking().ToList();
+            var query = _appDbContext.Movies.Where(x => x.IsActive == true).Include(x => x.MovieType).AsNoTracking().ToList();
             if (dt.PremiereDate.HasValue)
             {
                 query = query.Where(x => x.PremiereDate < dt.PremiereDate).ToList();

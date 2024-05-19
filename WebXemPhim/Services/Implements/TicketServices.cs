@@ -14,10 +14,14 @@ namespace MovieManagement.Services.Implements
     {
         private readonly ResponseObject<DataResponsesTicket> _responseObject;
         private readonly TicketConverter _ticketConverter;
-        public TicketServices(ResponseObject<DataResponsesTicket> responseObject, TicketConverter ticketConverter)
+        private readonly SchedulesConverter _scheduleConverter;
+        public TicketServices(ResponseObject<DataResponsesTicket> responseObject, 
+            TicketConverter ticketConverter,
+            SchedulesConverter scheduleConverter)
         {
             _responseObject = responseObject;
             _ticketConverter = ticketConverter;
+            _scheduleConverter = scheduleConverter;
         }
 
         public async Task<ResponseObject<DataResponsesTicket>> CreateTicket(int scheduleId, Requests_CreateTicket request)
@@ -140,36 +144,30 @@ namespace MovieManagement.Services.Implements
 
         public async Task<List<Ticket>> CreateListTicket(int scheduleId)
         {
-            // Lấy thông tin lịch chiếu
             var schedule = await _appDbContext.Schedules.SingleOrDefaultAsync(x => x.Id == scheduleId);
             if (schedule == null)
             {
                 throw new ArgumentNullException("Lịch chiếu không tồn tại");
             }
 
-            // Lấy danh sách các ghế trong phòng chiếu
             var seatsInRoom = await _appDbContext.Seats
                 .Where(x => x.RoomId == schedule.RoomId)
                 .ToListAsync();
 
-            // Lấy danh sách các ghế đã có vé trong lịch chiếu này
             var existingTickets = await _appDbContext.Tickets
                 .Where(x => x.ScheduleId == scheduleId)
                 .Select(x => x.SeatId)
                 .ToListAsync();
 
-            // Khởi tạo danh sách vé mới
             List<Ticket> list = new List<Ticket>();
 
             foreach (var seat in seatsInRoom)
             {
-                // Kiểm tra ghế đã được đặt chưa
                 if (existingTickets.Contains(seat.Id))
                 {
-                    continue; // Bỏ qua ghế đã được đặt
+                    continue; 
                 }
 
-                // Tạo vé mới
                 Ticket ticket = new Ticket
                 {
                     ScheduleId = scheduleId,
@@ -177,7 +175,6 @@ namespace MovieManagement.Services.Implements
                     Code = "Movie" + DateTime.Now.Ticks.ToString() + new Random().Next(1000, 9999).ToString()
                 };
 
-                // Đặt giá vé theo loại ghế
                 switch (seat.SeatTypeId)
                 {
                     case 1:
@@ -196,7 +193,6 @@ namespace MovieManagement.Services.Implements
                 list.Add(ticket);
             }
 
-            // Thêm vé mới vào cơ sở dữ liệu
             await _appDbContext.Tickets.AddRangeAsync(list);
             await _appDbContext.SaveChangesAsync();
             return list;
@@ -206,10 +202,16 @@ namespace MovieManagement.Services.Implements
         public async Task<DataResponsesTicket[]> GetAllTicketNoPagination(int scheduleId)
         {
             var tickets = await _appDbContext.Tickets
-        .Where(x => x.ScheduleId == scheduleId)
-        .Select(x => _ticketConverter.ConvertDtandSeaType(x))
-        .ToArrayAsync();
+                    .Where(x => x.ScheduleId == scheduleId)
+                    .Select(x => _ticketConverter.ConvertDtandSeaType(x))
+                    .ToArrayAsync();
             return tickets;
+        }
+        public async Task<PageResult<DataResponsesSchedule>> GetAllTicketss(int pageSize, int pageNumber)
+        {
+            var query = _appDbContext.Schedules.Select(x => _scheduleConverter.ConvertDtforticket(x));
+            var result = Pagination.GetPagedData(query, pageSize, pageNumber);
+            return result;
         }
 
     }

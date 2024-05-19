@@ -49,7 +49,7 @@ namespace WebXemPhim.Services.Implements
                 Code = DateTime.Now.Ticks.ToString() + "schmov" + new Random().Next(1000, 9999),
                 StartAt = request.StartAt,
                 EndAt = endAt, 
-                Name = "Phim : "+ movie.Name,
+                Name = "Lịch Chiếu : " + movie.Name,
             };
 
             await _appDbContext.Schedules.AddAsync(schedule);
@@ -93,7 +93,7 @@ namespace WebXemPhim.Services.Implements
             }
 
             schedule.StartAt = request.StartAt;
-            schedule.Name = "Phim : " + movie.Name;
+            schedule.Name = "Lịch Chiếu : " + movie.Name;
             schedule.Code = DateTime.Now.Ticks.ToString() + "schmov" + new Random().Next(100, 999);
             schedule.MovieId = request.MovieId;
             schedule.RoomId = request.RoomId;
@@ -108,10 +108,23 @@ namespace WebXemPhim.Services.Implements
 
         public async Task<PageResult<DataResponsesSchedule>> GetSchedulesByMovie(int movieId, int pageSize, int pageNumber)
         {
-            var query = _appDbContext.Schedules.Where(x => x.MovieId == movieId).Select(x => _converter.ConvertDt(x));
+            var query = _appDbContext.Schedules.Where(x => x.MovieId == movieId).Select(x => _converter.ConvertDtforticket(x));
             var result = Pagination.GetPagedData(query, pageSize, pageNumber);
             return result;
         }
+        public async Task<PageResult<DataResponsesScheduleForDate>> GetSchedulesMovielistHours(int movieId, int pageSize, int pageNumber)
+        {
+            var schedules = await _appDbContext.Schedules
+                .Where(x => x.MovieId == movieId)
+                .ToListAsync();
+
+            var dataResponses = _converter.ConvertDataforday(schedules);
+
+            var pagedData = Pagination.GetPagedData(dataResponses.AsQueryable(), pageSize, pageNumber);
+
+            return pagedData;
+        }
+
 
         public async Task<PageResult<DataResponsesSchedule>> GetAlls(InputScheduleData input, int pageSize, int pageNumber)
         {
@@ -123,7 +136,10 @@ namespace WebXemPhim.Services.Implements
             var result = Pagination.GetPagedData(query.Select(x => _converter.ConvertDt(x)).AsQueryable(), pageSize, pageNumber);
             return result;
         }
-
+        public IEnumerable<Schedule> GetAllSchedulesNoPagination()
+        {
+            return _appDbContext.Schedules.Where(x => x.IsActive == true).AsQueryable();
+        }
         public async Task<ResponseObject<DataResponsesSchedule>> DeleteSchedule(int scheduleId)
         {
             var schedule = await _appDbContext.Schedules.SingleOrDefaultAsync(x => x.Id == scheduleId);
@@ -155,7 +171,7 @@ namespace WebXemPhim.Services.Implements
             var result = await _appDbContext.Schedules.SingleOrDefaultAsync(x => x.Id == schId);
             if (result == null)
             {
-                return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy Id Lịch Chie", null);
+                return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy Id Lịch Chiếu", null);
             }
             return _responseObject.ResponseSucess("Lấy Dữ Liệu Thành Công", _converter.ConvertDt(result));
         }

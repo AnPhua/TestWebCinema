@@ -106,7 +106,6 @@ namespace WebXemPhim.Controllers
         //    return Ok(await ticketServices.CreateListTicket(scheduleId, requests));
         //}
         [HttpPost("CreateListTicket/{scheduleId}")]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateListTicket(int scheduleId)
         {
             return Ok(await ticketServices.CreateListTicket(scheduleId));
@@ -309,6 +308,11 @@ namespace WebXemPhim.Controllers
         {
             return Ok(movieServices.GetAllRateTypeNoPagination());
         }
+        [HttpGet("GetAllSchedulesNoPagination")]
+        public async Task<IActionResult> GetAllSchedulesNoPagination()
+        {
+            return Ok(scheduleServices.GetAllSchedulesNoPagination());
+        }
         [HttpGet("GetBannerById/{bannerId}")]
         public async Task<IActionResult> GetBannerById([FromRoute] int bannerId)
         {
@@ -351,5 +355,12 @@ namespace WebXemPhim.Controllers
         {
             return Ok(await rankCustomerServices.UpdateRankCustomer(request));
         }
+        [HttpGet("GetListForTicket")]
+        public async Task<IActionResult> GetListForTicket(int pageSize = 10, int pageNumber = 1)
+        {
+            return Ok(await ticketServices.GetAllTicketss(pageSize, pageNumber));
+        }
+
+
     }
 }

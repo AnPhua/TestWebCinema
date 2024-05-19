@@ -15,7 +15,7 @@ namespace WebXemPhim.Payloads.Converters
         {
             return new DataResponsesTicket
             {
-                Code = ticket.Code,
+                //Code = ticket.Code,
                 Id = ticket.Id,
                 ScheduleName = _context.Schedules.SingleOrDefault(x => x.Id == ticket.ScheduleId).Name,
                 SeatName = _context.Seats.SingleOrDefault(x => x.Id == ticket.SeatId).Line + _context.Seats.SingleOrDefault(x => x.Id == ticket.SeatId).Number,
@@ -30,12 +30,31 @@ namespace WebXemPhim.Payloads.Converters
             {
                 return new DataResponsesTicket
                 {
-                    Code = ticket.Code,
+                    //Code = ticket.Code,
                     Id = ticket.Id,
-                    SeatType = seatType.NameType,
+                    SeatTypeId = seat.SeatTypeId,
                     ScheduleName = _context.Schedules.SingleOrDefault(x => x.Id == ticket.ScheduleId)?.Name,
                     SeatName = seat.Line + seat.Number,
                     PriceTicket = ticket.PriceTicket
+                };
+            }
+            return null;
+        }
+        public DataResponsesTicketforsche ConvertDtandticket(Ticket ticket)
+        {
+            var seat = _context.Seats.SingleOrDefault(x => x.Id == ticket.SeatId);
+            var seatType = seat != null ? _context.SeatTypes.SingleOrDefault(x => x.Id == seat.SeatTypeId) : null;
+            if (seat != null && seatType != null)
+            {
+                return new DataResponsesTicketforsche
+                {
+                    Id = ticket.Id,
+                    SeatTypeId = seat.SeatTypeId,
+                    SeatId = ticket.SeatId,
+                    SeatName = seat.Line + seat.Number,
+                    PriceTicket = ticket.PriceTicket,
+                    IsActive = ticket.IsActive,
+                    Line = seat.Line,
                 };
             }
             return null;

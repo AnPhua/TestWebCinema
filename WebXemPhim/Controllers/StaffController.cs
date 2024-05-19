@@ -98,10 +98,15 @@ namespace WebXemPhim.Controllers
         {
             return Ok(await _billService.SalesStatisticsFood(input));
         }
-        [HttpGet("getSchedulesByMovie")]
+        [HttpGet("getSchedulesByMovie/{movieId}")]
         public async Task<IActionResult> GetSchedulesByMovie(int movieId, int pageSize = 10, int pageNumber = 1)
         {
             return Ok(await _iScheduleService.GetSchedulesByMovie(movieId, pageSize, pageNumber));
+        }
+        [HttpGet("GetSchedulesListHour/{movieId}")]
+        public async Task<IActionResult> GetSchedulesListHour(int movieId, int pageSize = 10, int pageNumber = 1)
+        {
+            return Ok(await _iScheduleService.GetSchedulesMovielistHours(movieId, pageSize, pageNumber));
         }
         [HttpPut("deleteSchedule/{scheduleId}")]
         [Authorize(Roles = "Admin,Censor")]
