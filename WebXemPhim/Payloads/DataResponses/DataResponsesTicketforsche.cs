@@ -3,7 +3,7 @@
     public class DataResponsesTicketforsche : DataResponsesId
     {
         public string SeatName { get; set; }
-        
+        public int TypeTicket { get; set; }
 
         public int SeatId { get; set; }
         public int SeatTypeId { get; set; }

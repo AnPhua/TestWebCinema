@@ -4,6 +4,7 @@
     {
         public int TicketId { get; set; }
         public int ScheduleId { get; set; }
+        public int TicketStatusId { get; set; }
         public int SeatId { get; set; }
     }
 }

@@ -173,7 +173,7 @@ namespace WebXemPhim.Services.Implements
             {
                 return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy Id Lịch Chiếu", null);
             }
-            return _responseObject.ResponseSucess("Lấy Dữ Liệu Thành Công", _converter.ConvertDt(result));
+            return _responseObject.ResponseSucess("Lấy Dữ Liệu Thành Công", _converter.ConvertDtforticket(result));
         }
     }
 }

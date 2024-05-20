@@ -17,6 +17,7 @@ namespace WebXemPhim.Payloads.Converters
             {
                 //Code = ticket.Code,
                 Id = ticket.Id,
+                TypeTicket = ticket.TypeTicket,
                 ScheduleName = _context.Schedules.SingleOrDefault(x => x.Id == ticket.ScheduleId).Name,
                 SeatName = _context.Seats.SingleOrDefault(x => x.Id == ticket.SeatId).Line + _context.Seats.SingleOrDefault(x => x.Id == ticket.SeatId).Number,
                 PriceTicket = ticket.PriceTicket
@@ -33,6 +34,7 @@ namespace WebXemPhim.Payloads.Converters
                     //Code = ticket.Code,
                     Id = ticket.Id,
                     SeatTypeId = seat.SeatTypeId,
+                    TypeTicket = ticket.TypeTicket,
                     ScheduleName = _context.Schedules.SingleOrDefault(x => x.Id == ticket.ScheduleId)?.Name,
                     SeatName = seat.Line + seat.Number,
                     PriceTicket = ticket.PriceTicket
@@ -51,6 +53,7 @@ namespace WebXemPhim.Payloads.Converters
                     Id = ticket.Id,
                     SeatTypeId = seat.SeatTypeId,
                     SeatId = ticket.SeatId,
+                    TypeTicket = ticket.TypeTicket,
                     SeatName = seat.Line + seat.Number,
                     PriceTicket = ticket.PriceTicket,
                     IsActive = ticket.IsActive,

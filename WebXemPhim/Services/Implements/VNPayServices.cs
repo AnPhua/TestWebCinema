@@ -96,7 +96,8 @@ namespace WebXemPhim.Services.Implements
                     foreach (var item in billTicket)
                     {
                         item.Ticket.IsActive = false;
-                        item.Ticket.Seat.SeatStatusId = 2;
+                        item.Ticket.TypeTicket = 5;
+                        item.Ticket.Seat.SeatStatusId = 1;
                         _appDbContext.Seats.Update(item.Ticket.Seat);
                     }
 

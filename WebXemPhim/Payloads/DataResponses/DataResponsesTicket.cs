@@ -8,6 +8,7 @@ namespace WebXemPhim.Payloads.DataResponses
         public string ScheduleName { get; set; }
         public string SeatName { get; set; }
         //public string SeatType { get; set; }
+        public int TypeTicket { get; set; }
         public int SeatId { get; set; }
         public string Line { get; set; }
         public bool? IsActive { get; set; }

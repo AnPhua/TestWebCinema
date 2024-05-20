@@ -18,6 +18,7 @@ namespace WebXemPhim.Payloads.DataResponses
         public string MovieTypeName { get; set; }
         public string Name { get; set; }
         public string RateName { get; set; }
+        public string RateCode { get; set; }
         public string Trailer { get; set; }
         public IQueryable<DataResponsesSchedule> Schedules { get; set; }
     }

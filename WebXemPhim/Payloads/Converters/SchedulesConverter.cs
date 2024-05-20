@@ -20,7 +20,7 @@ namespace WebXemPhim.Payloads.Converters
             .Where(x => x.ScheduleId == schedule.Id)
             .ToList();
 
-            var emptySeats = tickets.Count(x => x.IsActive == true);
+            var emptySeats = tickets.Count(x => x.TypeTicket == 1);
             return new DataResponsesSchedule
             {
                 Id = schedule.Id,
@@ -39,7 +39,7 @@ namespace WebXemPhim.Payloads.Converters
             .Where(x => x.ScheduleId == schedule.Id)
             .ToList();
 
-            var emptySeats = tickets.Count(x => x.IsActive == true);
+            var emptySeats = tickets.Count(x => x.TypeTicket == 1);
             return new DataResponsesSchedule
             {
                 Id = schedule.Id,
@@ -103,7 +103,7 @@ namespace WebXemPhim.Payloads.Converters
                 var listTimeinSchedules = group.Select(g =>
                 {
                     var scheduleTickets = tickets.Where(x => x.ScheduleId == g.Id).ToList();
-                    var emptySeats = scheduleTickets.Count(x => x.IsActive == true);
+                    var emptySeats = scheduleTickets.Count(x => x.TypeTicket == 1);
                     return new ControlDate
                     {
                         Id= g.Id,

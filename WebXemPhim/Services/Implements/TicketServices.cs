@@ -46,6 +46,7 @@ namespace MovieManagement.Services.Implements
             }
             Ticket ticket = new Ticket();
             ticket.ScheduleId = scheduleId;
+            ticket.TypeTicket = 1;
             ticket.SeatId = request.SeatId;
             ticket.Code = "Movie" + DateTime.Now.Ticks.ToString() + new Random().Next(1000, 9999).ToString();
             if (seat.SeatTypeId == 1)
@@ -172,6 +173,7 @@ namespace MovieManagement.Services.Implements
                 {
                     ScheduleId = scheduleId,
                     SeatId = seat.Id,
+                    TypeTicket = 1,
                     Code = "Movie" + DateTime.Now.Ticks.ToString() + new Random().Next(1000, 9999).ToString()
                 };
 
@@ -209,7 +211,7 @@ namespace MovieManagement.Services.Implements
         }
         public async Task<PageResult<DataResponsesSchedule>> GetAllTicketss(int pageSize, int pageNumber)
         {
-            var query = _appDbContext.Schedules.Select(x => _scheduleConverter.ConvertDtforticket(x));
+            var query = _appDbContext.Schedules.Where(x=>x.IsActive == true).Select(x => _scheduleConverter.ConvertDtforticket(x));
             var result = Pagination.GetPagedData(query, pageSize, pageNumber);
             return result;
         }

@@ -109,7 +109,6 @@ namespace WebXemPhim.Controllers
             return Ok(await _iScheduleService.GetSchedulesMovielistHours(movieId, pageSize, pageNumber));
         }
         [HttpPut("deleteSchedule/{scheduleId}")]
-        [Authorize(Roles = "Admin,Censor")]
         public async Task<IActionResult> DeleteSchedule(int scheduleId)
         {
             return Ok(await _iScheduleService.DeleteSchedule(scheduleId));

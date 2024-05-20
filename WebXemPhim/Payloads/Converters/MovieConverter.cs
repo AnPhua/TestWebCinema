@@ -30,7 +30,8 @@ namespace WebXemPhim.Payloads.Converters
                 IsSellTicket = movie.IsSellTicket,
                 MovieTypeName = _appDbContext.MovieTypes.SingleOrDefault(x => x.Id == movie.MovieTypeId).MovieTypeName,
                 Name = movie.Name,
-                RateName = _appDbContext.Rates.SingleOrDefault(x=>x.Id == movie.RateId).Code +" - "+ _appDbContext.Rates.SingleOrDefault(x => x.Id == movie.RateId).Description,
+                RateName = _appDbContext.Rates.SingleOrDefault(x => x.Id == movie.RateId).Code + " - " + _appDbContext.Rates.SingleOrDefault(x => x.Id == movie.RateId).Description,
+                RateCode = _appDbContext.Rates.SingleOrDefault(x => x.Id == movie.RateId).Code,
                 Trailer = movie.Trailer,
                 Schedules = _appDbContext.Schedules.Where(x => x.MovieId == movie.Id).Select(x => _converter.ConvertDt(x))
             };
@@ -54,6 +55,7 @@ namespace WebXemPhim.Payloads.Converters
                 MovieTypeName = _appDbContext.MovieTypes.SingleOrDefault(x => x.Id == movie.MovieTypeId).MovieTypeName,
                 Name = movie.Name,
                 RateName = _appDbContext.Rates.SingleOrDefault(x => x.Id == movie.RateId).Code + " - " + _appDbContext.Rates.SingleOrDefault(x => x.Id == movie.RateId).Description,
+                RateCode = _appDbContext.Rates.SingleOrDefault(x => x.Id == movie.RateId).Code,
                 Trailer = movie.Trailer,
                 Schedules = _appDbContext.Schedules.Where(x => x.MovieId == movie.Id).Select(x => _converter.ConvertDt(x))
             };
