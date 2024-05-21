@@ -87,13 +87,20 @@ namespace WebXemPhim.Controllers
             return Ok(await _billService.CreateBillFood(billId, request));
         }
         [HttpPost("CreateBill")]
-        [Authorize(Roles = "Admin,Censor,Member")]
         public async Task<IActionResult> CreateBill(Requests_CreateBill request)
         {
             return Ok(await _billService.CreateBill(request));
         }
+        //[HttpPost]
+        //[Route("/Vnpay/CreatePaymentUrl")]
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        //public async Task<IActionResult> CreatePaymentUrl(int billId)
+        //{
+        //    int id = int.Parse(HttpContext.User.FindFirst("UserId").Value);
+        //    return Ok(await _vNPayServices.CreatePaymentUrl(billId, HttpContext, id));
+        //}
         [HttpPost]
-        [Route("/Vnpay/CreatePaymentUrl")]
+        [Route("/Vnpay/CreatePaymentUrl/{billId}")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> CreatePaymentUrl(int billId)
         {

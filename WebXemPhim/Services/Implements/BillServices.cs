@@ -8,6 +8,7 @@ using WebXemPhim.Payloads.Responses;
 using WebXemPhim.Services.Interfaces;
 using WebXemPhim.Handle.Generate;
 using WebXemPhim.Services.Implements;
+using System.Data;
 
 namespace WebXemPhim.Services.Implements
 {
@@ -84,23 +85,23 @@ namespace WebXemPhim.Services.Implements
             var customer = await _appDbContext.Users.SingleOrDefaultAsync(x => x.Id == request.CustomerId);
             if (customer == null)
             {
-                return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Không tìm thấy thông tin khách hàng", null);
+                return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Không Tìm Thấy Thông Tin Khách Hàng", null);
             }
 
             var promotion = await _appDbContext.Promotions.SingleOrDefaultAsync(x => x.Id == request.PromotionId);
             var existingTickets = await _appDbContext.BillTickets.Where(x => request.BillTickets.Select(bt => bt.TicketId).Contains(x.TicketId)).ToListAsync();
             if (existingTickets.Any())
             {
-                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Vé đã được mua bởi người khác", null);
+                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Vé Đã Được Mua Bởi Người Khác", null);
             }
             Bill bill = new Bill
             {
-                CustomerId = request.CustomerId,
+                CustomerId = request.CustomerId == 0 ? 1013 : request.CustomerId,
                 TradingCode = GenerateCode.GenerateCodes(),
-                CreateTime = DateTime.UtcNow,
-                Name = request.BillName,
+                CreateTime = DateTime.Now,
+                Name = "Bill"  + new Random().Next(100, 999).ToString() + DateTime.Now.Ticks.ToString(),
                 BillStatusId = 1,
-                PromotionId = request.PromotionId,
+                PromotionId = request.PromotionId == 0 ? 1 : request.PromotionId,
                 BillTickets = null,
                 BillFoods = null,
                 IsActive = true,
