@@ -16,6 +16,7 @@ namespace WebXemPhim.Payloads.DataResponses
         public string HeroImage { get; set; }
         public string Language { get; set; }
         public string MovieTypeName { get; set; }
+        public int MovieTypeId { get; set; }
         public string Name { get; set; }
         public string RateName { get; set; }
         public string RateCode { get; set; }

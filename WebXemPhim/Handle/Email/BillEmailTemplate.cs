@@ -34,9 +34,9 @@ namespace WebXemPhim.Handle.Email
                     body {{
                         font-family: Arial, sans-serif;
                     }}
-                    image {{
-                        width: 60px;
-                        height: 70px;
+                    img {{
+                        width: 100%;
+                        height: auto;
                     }}
                     h1 {{
                         color: #333;
@@ -64,6 +64,7 @@ namespace WebXemPhim.Handle.Email
                 </style>
             </head>
             <body>
+                <img src=""https://res.cloudinary.com/dxy9xwjcz/image/upload/v1716343236/images638519400334852759.avif"" alt=""Invoice Image"" style=""width: 100%; height: auto;"">
                 <h1>Thông tin hóa đơn </h1>
                 <h2 style=""color: red; font-size: 20px; font-weight: bold;"">{(string.IsNullOrEmpty(message) ? "" : message)}</h2>
 
@@ -86,7 +87,7 @@ namespace WebXemPhim.Handle.Email
                     </tr>
                 </table>
 
-                <h2 style=""color: red; font-size: 20px; font-weight: bold;"">Thông tin vé</h2>
+                <h2 style=""color: red; font-size: 20px; font-weight: bold;"">Thông tin vé, đồ ăn</h2>
                 <table>
                     <tr>
                         <th>Ghế</th>
@@ -113,7 +114,6 @@ namespace WebXemPhim.Handle.Email
             htmlContent += $@"
                 </table>
 
-                <h2 style=""color: red; font-size: 20px; font-weight: bold;"">Thông tin đồ ăn</h2>
                 <table>
                     <tr>
                         <th>Tên đồ ăn</th>
