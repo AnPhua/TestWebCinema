@@ -107,6 +107,18 @@ namespace WebXemPhim.Services.Implements
                     var user = _appDbContext.Users.FirstOrDefault(x => x.Id == bill.CustomerId);
                     if (user != null)
                     {
+                        user.Point += 100;
+                        var rankCustomers = await _appDbContext.RankCustomers.ToListAsync();
+                        var newRank = rankCustomers
+                            .Where(r => user.Point >= r.Point)
+                            .OrderByDescending(r => r.Point)
+                            .FirstOrDefault();
+
+                        if (newRank != null)
+                        {
+                            user.RankCustomerId = newRank.Id;
+                        }
+                        _appDbContext.Users.Update(user);
                         string email = user.Email;
                         string mss = _authService.SendMail(new SendEmail
                         {

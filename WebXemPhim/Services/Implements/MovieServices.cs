@@ -393,13 +393,39 @@ namespace WebXemPhim.Services.Implements
             var result = Pagination.GetPagedData(queryResult, pageSize, pageNumber);
             return result;
         }
+        public async Task<PageResult<DataResponsesMovie>> GetAllMovieSpecial(InputFilter input, int pageSize, int pageNumber)
+        {
+            var query = _appDbContext.Movies.Include(x => x.MovieType).AsNoTracking().Where(x => x.IsActive == true).ToList();
+            query = query.Where(x => _appDbContext.Schedules.Count(s => s.MovieId == x.Id) >= 5).ToList();
+            if (input.PremiereDate.HasValue)
+            {
+                query = query.Where(x => x.PremiereDate == input.PremiereDate).ToList();
+            }
+            if (input.MovieTypeId.HasValue)
+            {
+                query = query.Where(x => x.MovieTypeId == input.MovieTypeId).ToList();
+            }
+            if (!string.IsNullOrEmpty(input.Name))
+            {
+                query = query.Where(x => x.Name.Trim().ToLower().Contains(input.Name.Trim().ToLower())).ToList();
+            }
+            var queryResult = query.Select(x => _movieConverter.ConvertDt(x)).AsQueryable();
+            var result = Pagination.GetPagedData(queryResult, pageSize, pageNumber);
+            return result;
+        }
 
         public async Task<ResponseObject<DataResponsesMovie>> GetMovieById(int movieId)
         {
-            var movie = await _appDbContext.Movies.SingleOrDefaultAsync(x => x.Id == movieId);
+            var movie = await _appDbContext.Movies.Where(x => x.Id == movieId).SingleOrDefaultAsync();
+
             return _responseObjectMovie.ResponseSucess("Lấy thông tin thành công", _movieConverter.ConvertDtID(movie));
         }
+        public async Task<ResponseObject<DataResponsesMovie>> GetMovieByIdForSort(int movieId)
+        {
+            var movie = await _appDbContext.Movies.Where(x => x.Id == movieId).SingleOrDefaultAsync();
 
+            return _responseObjectMovie.ResponseSucess("Lấy thông tin thành công", _movieConverter.ConvertDtIDSort(movie));
+        }
         public IEnumerable<MovieType> GetAllMovieTypeNoPagination()
         {
             return _appDbContext.MovieTypes.AsQueryable();

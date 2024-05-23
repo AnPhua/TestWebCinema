@@ -123,7 +123,6 @@ namespace WebXemPhim.Controllers
             return Ok(seatServices.DeleteSeat(seatId));
         }
         [HttpPost("CreateMovie")]
-        [Authorize(Roles = "Admin")]
         [Consumes(contentType: "multipart/form-data")]
         public async Task<IActionResult> CreateMovie([FromForm] Requests_CreateMovie requests)
         {

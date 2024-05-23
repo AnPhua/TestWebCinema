@@ -118,7 +118,35 @@ namespace WebXemPhim.Services.Implements
                 .Where(x => x.MovieId == movieId)
                 .ToListAsync();
 
+            var dataResponses = _converter.ConvertDatafordaySort(schedules);
+
+            var pagedData = Pagination.GetPagedData(dataResponses.AsQueryable(), pageSize, pageNumber);
+
+            return pagedData;
+        }
+        public async Task<PageResult<DataResponsesScheduleForDate>> GetSchedulesDaylistHour(InputDtScheduleDay dt, int pageSize, int pageNumber)
+        {
+            var targetDate = dt.TheDay.Value.Date;
+            var schedules = await _appDbContext.Schedules
+            .Where(x => x.StartAt.Year == targetDate.Year &&
+                        x.StartAt.Month == targetDate.Month &&
+                        x.StartAt.Day == targetDate.Day &&x.IsActive == true)
+            .ToListAsync();
+
             var dataResponses = _converter.ConvertDataforday(schedules);
+
+            var pagedData = Pagination.GetPagedData(dataResponses.AsQueryable(), pageSize, pageNumber);
+
+            return pagedData;
+        }
+        public async Task<PageResult<DataResponsesGetDays>> GetSchedulesForAllDays(int pageSize, int pageNumber)
+        {
+            var today = DateTime.Today;
+            var schedules = await _appDbContext.Schedules
+            .Where(x => x.IsActive == true && x.StartAt >= today)
+            .ToListAsync();
+
+            var dataResponses = _converter.ConverForGetDays(schedules);
 
             var pagedData = Pagination.GetPagedData(dataResponses.AsQueryable(), pageSize, pageNumber);
 

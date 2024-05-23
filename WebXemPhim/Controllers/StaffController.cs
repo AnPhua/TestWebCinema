@@ -53,6 +53,12 @@ namespace WebXemPhim.Controllers
         {
             return Ok(await _movieServices.GetAllMovie(input, pageSize, pageNumber));
         }
+        
+        [HttpGet("GetAllMovieSpecial")]
+        public async Task<IActionResult> GetAllMovieSpecial([FromQuery] InputFilter input, int pageSize = 10, int pageNumber = 1)
+        {
+            return Ok(await _movieServices.GetAllMovieSpecial(input, pageSize, pageNumber));
+        }
         [HttpGet("GetMovieUnreference")]
         public async Task<IActionResult> GetMovieUnreference([FromQuery] InputDt dt, int pageSize = 10, int pageNumber = 1)
         {
@@ -68,6 +74,12 @@ namespace WebXemPhim.Controllers
         {
             return Ok(await _movieServices.GetMovieById(movieId));
         }
+        [HttpGet("GetMovieByIdForSort")]
+        public async Task<IActionResult> GetMovieByIdForSort(int movieId)
+        {
+            return Ok(await _movieServices.GetMovieByIdForSort(movieId));
+        }
+        
         [HttpGet("GetFeaturedMovies")]
         public async Task<IActionResult> GetFeaturedMovies(int pageSize = 10, int pageNumber = 1)
         {
@@ -108,6 +120,17 @@ namespace WebXemPhim.Controllers
         {
             return Ok(await _iScheduleService.GetSchedulesMovielistHours(movieId, pageSize, pageNumber));
         }
+        [HttpGet("GetSchedulesDayListHour")]
+        public async Task<IActionResult> GetSchedulesDayListHour([FromQuery] InputDtScheduleDay dt, int pageSize = 20, int pageNumber = 1)
+        {
+            return Ok(await _iScheduleService.GetSchedulesDaylistHour(dt, pageSize, pageNumber));
+        }
+        [HttpGet("GetSchedulesForAllDays")]
+        public async Task<IActionResult> GetSchedulesForAllDays(int pageSize = 20, int pageNumber = 1)
+        {
+            return Ok(await _iScheduleService.GetSchedulesForAllDays(pageSize, pageNumber));
+        }
+        
         [HttpPut("deleteSchedule/{scheduleId}")]
         public async Task<IActionResult> DeleteSchedule(int scheduleId)
         {

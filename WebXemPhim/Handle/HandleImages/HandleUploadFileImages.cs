@@ -20,7 +20,7 @@ namespace WebXemPhim.Handle.HandleImages
                 var uploadParams = new ImageUploadParams()
                 {
                     File = new FileDescription(f.FileName, stream),
-                    PublicId = "images" +DateTime.UtcNow.Ticks,
+                    PublicId = "images" +DateTime.Now.Ticks,
                     Transformation = new Transformation().Width(400).Height(400).Crop("fit")
                 };
                 var uploadfileResult = await HandleUploadFileImages.cloudy.UploadAsync(uploadParams);

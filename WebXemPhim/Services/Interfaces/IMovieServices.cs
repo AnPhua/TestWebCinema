@@ -30,6 +30,8 @@ namespace WebXemPhim.Services.Interfaces
         IEnumerable<Movie> GetAllMovieNoPagination();
         Task<ResponseObject<DataResponsesMovieType>> GetMovieTypeById(int movieTypeId);
         Task<PageResult<DataResponsesMovie>> GetAllMovie(InputFilter input, int pageSize, int pageNumber);
+        Task<PageResult<DataResponsesMovie>> GetAllMovieSpecial(InputFilter input, int pageSize, int pageNumber);
         Task<ResponseObject<DataResponsesMovie>> GetMovieById(int movieId);
+        Task<ResponseObject<DataResponsesMovie>> GetMovieByIdForSort(int movieId);
     }
 }
