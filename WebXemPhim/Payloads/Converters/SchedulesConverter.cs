@@ -135,8 +135,9 @@ namespace WebXemPhim.Payloads.Converters
                     var emptySeats = scheduleTickets.Count(x => x.TypeTicket == 1);
                     return new ControlDate
                     {
-                        Id= g.Id,
+                        Id = g.Id,
                         TimeDt = g.StartAt.ToString("HH:mm"),
+                        StartAt = g.StartAt,
                         EmptySeat = emptySeats
                     };
                 }).ToList();
@@ -166,7 +167,7 @@ namespace WebXemPhim.Payloads.Converters
         public List<DataResponsesScheduleForDate> ConvertDatafordaySort(IEnumerable<Schedule> schedules)
         {
             var filteredSchedules = schedules
-               .Where(s => s.StartAt >= DateTime.Today)
+               .Where(s => s.StartAt >= DateTime.Now)
                .OrderBy(s => s.StartAt);
             var groupedSchedules = filteredSchedules
                 .GroupBy(s => new
@@ -189,11 +190,12 @@ namespace WebXemPhim.Payloads.Converters
                 var listTimeinSchedules = group.Select(g =>
                 {
                     var scheduleTickets = tickets.Where(x => x.ScheduleId == g.Id).ToList();
-                    var emptySeats = scheduleTickets.Count(x => x.TypeTicket == 1);
+                    var emptySeats = scheduleTickets.Count(x => x.TypeTicket == 1 && x.IsActive == true);
                     return new ControlDate
                     {
                         Id = g.Id,
                         TimeDt = g.StartAt.ToString("HH:mm"),
+                        StartAt = g.StartAt,
                         EmptySeat = emptySeats
                     };
                 }).ToList();

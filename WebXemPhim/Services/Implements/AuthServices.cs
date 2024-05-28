@@ -122,12 +122,13 @@ namespace WebXemPhim.Services.Implements
             user.IsActive = false;
             user.RoleId = 3;
             user.UserStatusId = 1;
+            user.RankCustomerId = 5;
             user.Point = 0;
             await _appDbContext.Users.AddAsync(user);
             await _appDbContext.SaveChangesAsync();
             ConfirmEmail confirmEmail = new ConfirmEmail();
             confirmEmail.UserId = user.Id;
-            confirmEmail.ExpiredTime = DateTime.Now.AddMinutes(30);
+            confirmEmail.ExpiredTime = DateTime.Now.AddMinutes(60);
             confirmEmail.ConfirmCode = RandomActiveCode();
             confirmEmail.IsConfirm = false;
             await _appDbContext.ConfirmEmails.AddAsync(confirmEmail);

@@ -14,5 +14,6 @@ namespace WebXemPhim.Services.Interfaces
         Task<List<Ticket>> CreateListTicket(int scheduleId);
         Task<DataResponsesTicket[]> GetAllTicketNoPagination(int scheduleId);
         Task<PageResult<DataResponsesSchedule>> GetAllTicketss(int pageSize, int pageNumber);
+        Task<string> DeleteListTicket();
     }
 }

@@ -40,7 +40,6 @@ namespace WebXemPhim.Controllers
             return Ok(await _iCinemaService.GetListCinema(pageSize, pageNumber));
         }
         [HttpPost("createSchedule")]
-        [Authorize(Roles = "Admin, Manager, Staff, Member")]
         public async Task<IActionResult> CreateSchedule(Requests_CreateSchedule request)
         {
             return Ok(await _iScheduleServices.CreateSchedule(request));

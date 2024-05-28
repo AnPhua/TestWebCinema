@@ -247,6 +247,11 @@ namespace WebXemPhim.Controllers
         {
             return Ok(await bannerServices.DeleteBanner(bannerId));
         }
+        [HttpDelete("DeleteListSeat")]
+        public async Task<IActionResult> DeleteListSeat()
+        {
+            return Ok(await ticketServices.DeleteListTicket());
+        }
         [HttpGet("GetAllBanners")]
         public async Task<IActionResult> GetAllBanners(int pageSize = 10, int pageNumber = 1)
         {

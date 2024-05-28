@@ -166,7 +166,7 @@ namespace WebXemPhim.Services.Implements
         }
         public IEnumerable<Schedule> GetAllSchedulesNoPagination()
         {
-            return _appDbContext.Schedules.Where(x => x.IsActive == true).AsQueryable();
+            return _appDbContext.Schedules.Where(x => x.IsActive == true && x.StartAt > DateTime.Now).AsQueryable();
         }
         public async Task<ResponseObject<DataResponsesSchedule>> DeleteSchedule(int scheduleId)
         {

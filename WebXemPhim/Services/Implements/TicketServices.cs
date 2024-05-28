@@ -215,6 +215,25 @@ namespace MovieManagement.Services.Implements
             var result = Pagination.GetPagedData(query, pageSize, pageNumber);
             return result;
         }
+        public async Task<string> DeleteListTicket()
+        {
+            var ticketsToDelete = await _appDbContext.Tickets
+                .Where(ticket => !_appDbContext.BillTickets.Select(bt => bt.TicketId).Contains(ticket.Id)
+                                 && _appDbContext.Schedules.Any(schedule => schedule.Id == ticket.ScheduleId && schedule.StartAt < DateTime.Now))
+                .ToListAsync();
+
+            if (!ticketsToDelete.Any())
+            {
+                return "Không Có Vé Nào Để Xóa";
+            }
+
+            _appDbContext.Tickets.RemoveRange(ticketsToDelete);
+
+            await _appDbContext.SaveChangesAsync();
+
+            return "Xóa Tickets Thành Công!";
+        }
+
 
     }
 }
