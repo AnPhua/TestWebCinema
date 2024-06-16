@@ -37,6 +37,7 @@ namespace WebXemPhim.Payloads.Converters
                 Schedules = _appDbContext.Schedules.Where(x => x.MovieId == movie.Id).Select(x => _converter.ConvertDt(x))
             };
         }
+
         public DataResponsesMovie ConvertDtID(Movie movie)
         {
             return new DataResponsesMovie

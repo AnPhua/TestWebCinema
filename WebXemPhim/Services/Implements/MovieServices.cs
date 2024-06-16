@@ -346,7 +346,7 @@ namespace WebXemPhim.Services.Implements
             var query = _appDbContext.Movies.Where(x=>x.IsActive == true).Include(x => x.MovieType).AsNoTracking().ToList();
             if (dt.PremiereDate.HasValue)
             {
-                query = query.Where(x => x.PremiereDate >= dt.PremiereDate).ToList();
+                query = query.Where(x => x.PremiereDate > dt.PremiereDate).ToList();
             }
             var queryResult = query.Select(x => _movieConverter.ConvertDt(x)).AsQueryable();
             var result = Pagination.GetPagedData(queryResult, pageSize, pageNumber);
@@ -357,9 +357,11 @@ namespace WebXemPhim.Services.Implements
             var query = _appDbContext.Movies.Where(x => x.IsActive == true).Include(x => x.MovieType).AsNoTracking().ToList();
             if (dt.PremiereDate.HasValue)
             {
-                query = query.Where(x => x.PremiereDate < dt.PremiereDate).ToList();
+                query = query.Where(x => x.PremiereDate <= dt.PremiereDate).ToList();
             }
-            var queryResult = query.Select(x => _movieConverter.ConvertDt(x)).AsQueryable();
+            var orderByDes = query.OrderByDescending(x => x.PremiereDate);
+            var queryResult = orderByDes.Select(x => _movieConverter.ConvertDt(x)).AsQueryable();
+
             var result = Pagination.GetPagedData(queryResult, pageSize, pageNumber);
             return result;
         }

@@ -152,11 +152,7 @@ namespace WebXemPhim.Services.Implements
             }
             if (confirmEmail.ExpiredTime < DateTime.Now)
             {
-                User userdetele = await _appDbContext.Users.FirstOrDefaultAsync(x => x.Id == confirmEmail.UserId);
-                _appDbContext.ConfirmEmails.Remove(confirmEmail);
-                _appDbContext.Users.Remove(userdetele);
-                _appDbContext.SaveChanges();
-                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Mã Xác Thực Hết Hiệu Lực ! Hãy Đăng Kí Lại Tài Khoản (T.T)", null);
+                return _responseObject.ResponseFail(StatusCodes.Status400BadRequest, "Mã xác nhận đã hết hạn", null);
             }
             User user = await _appDbContext.Users.FirstOrDefaultAsync(x => x.Id == confirmEmail.UserId);
             user.UserStatusId = 2;
@@ -500,12 +496,10 @@ namespace WebXemPhim.Services.Implements
                 return _responseObject.ResponseFail(StatusCodes.Status404NotFound, "Không tìm thấy id người dùng", null);
             }
             var currentUser = _contextAccessor.HttpContext.User;
-
             if (!currentUser.Identity.IsAuthenticated)
             {
                 return _responseObject.ResponseFail(StatusCodes.Status401Unauthorized, "Người dùng không được xác thực hoặc không được xác định", null);
             }
-
             if (!currentUser.IsInRole("Admin"))
             {
                 return _responseObject.ResponseFail(StatusCodes.Status403Forbidden, "Không đủ quyền sử dụng chức năng này", null);

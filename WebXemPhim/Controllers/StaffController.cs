@@ -120,6 +120,11 @@ namespace WebXemPhim.Controllers
         {
             return Ok(await _iScheduleService.GetSchedulesMovielistHours(movieId, pageSize, pageNumber));
         }
+        [HttpGet("GetSchedulesDayHourGetSecond")]
+        public async Task<IActionResult> GetSchedulesDayHourGetSecond([FromQuery] InputDtScheduleDay dt, int pageSize = 20, int pageNumber = 1)
+        {
+            return Ok(await _iScheduleService.GetSchedulesDayHourGetSecond(dt, pageSize, pageNumber));
+        }
         [HttpGet("GetSchedulesDayListHour")]
         public async Task<IActionResult> GetSchedulesDayListHour([FromQuery] InputDtScheduleDay dt, int pageSize = 20, int pageNumber = 1)
         {

@@ -112,7 +112,7 @@ namespace WebXemPhim.Services.Implements
             var result = Pagination.GetPagedData(query, pageSize, pageNumber);
             return result;
         }
-        public async Task<PageResult<DataResponsesScheduleForDate>> GetSchedulesMovielistHours(int movieId, int pageSize, int pageNumber)
+        public async Task<PageResult<DataResponsesScheduleForDatePlus>> GetSchedulesMovielistHours(int movieId, int pageSize, int pageNumber)
         {
             var schedules = await _appDbContext.Schedules
                 .Where(x => x.MovieId == movieId)
@@ -124,16 +124,31 @@ namespace WebXemPhim.Services.Implements
 
             return pagedData;
         }
-        public async Task<PageResult<DataResponsesScheduleForDate>> GetSchedulesDaylistHour(InputDtScheduleDay dt, int pageSize, int pageNumber)
+
+        public async Task<PageResult<DataResponsesScheduleForDatePlus>> GetSchedulesDayHourGetSecond(InputDtScheduleDay dt, int pageSize, int pageNumber)
+        {
+            var targetDate = dt.TheDay.Value.Date;
+            var schedules = await _appDbContext.Schedules
+                .Where(x => x.StartAt.Year == targetDate.Year &&
+                            x.StartAt.Month == targetDate.Month &&
+                            x.StartAt.Day == targetDate.Day && x.IsActive == true)
+                .ToListAsync();
+
+            var dataResponses = _converter.ConvertDatafordaySort(schedules);
+            var pagedData = Pagination.GetPagedData(dataResponses.AsQueryable(), pageSize, pageNumber);
+
+            return pagedData;
+        }
+        public async Task<PageResult<DataResponsesMovieDetailsSchedule>> GetSchedulesDaylistHour(InputDtScheduleDay dt, int pageSize, int pageNumber)
         {
             var targetDate = dt.TheDay.Value.Date;
             var schedules = await _appDbContext.Schedules
             .Where(x => x.StartAt.Year == targetDate.Year &&
                         x.StartAt.Month == targetDate.Month &&
-                        x.StartAt.Day == targetDate.Day &&x.IsActive == true)
+                        x.StartAt.Day == targetDate.Day && x.IsActive == true)
             .ToListAsync();
 
-            var dataResponses = _converter.ConvertDataforday(schedules);
+            var dataResponses = _converter.ConvertDatafordaySortaddmv(schedules);
 
             var pagedData = Pagination.GetPagedData(dataResponses.AsQueryable(), pageSize, pageNumber);
 

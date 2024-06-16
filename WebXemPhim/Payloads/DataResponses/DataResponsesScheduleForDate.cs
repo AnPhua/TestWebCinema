@@ -5,8 +5,8 @@ namespace WebXemPhim.Payloads.DataResponses
     public class DataResponsesScheduleForDate : DataResponsesId
     {
         public int MovieId { get; set; }
-        public string RoomName { get; set; }
         public int Day { get; set; }
+        public string RoomName { get; set; }
         public int Month { get; set; }
         public int Year { get; set; }  
         public string DayDetails { get; set; }

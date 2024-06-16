@@ -11,8 +11,9 @@ namespace WebXemPhim.Services.Interfaces
         Task<ResponseObject<DataResponsesSchedule>> CreateSchedule(Requests_CreateSchedule request);
         Task<ResponseObject<DataResponsesSchedule>> UpdateSchedule(Requests_UpdateSchedule request);
         Task<PageResult<DataResponsesSchedule>> GetSchedulesByMovie(int movieId, int pageSize, int pageNumber);
-        Task<PageResult<DataResponsesScheduleForDate>> GetSchedulesMovielistHours(int movieId, int pageSize, int pageNumber);
-        Task<PageResult<DataResponsesScheduleForDate>> GetSchedulesDaylistHour(InputDtScheduleDay dt, int pageSize, int pageNumber);
+        Task<PageResult<DataResponsesScheduleForDatePlus>> GetSchedulesMovielistHours(int movieId, int pageSize, int pageNumber);
+        Task<PageResult<DataResponsesScheduleForDatePlus>> GetSchedulesDayHourGetSecond(InputDtScheduleDay dt, int pageSize, int pageNumber);
+        Task<PageResult<DataResponsesMovieDetailsSchedule>> GetSchedulesDaylistHour(InputDtScheduleDay dt, int pageSize, int pageNumber);
         Task<PageResult<DataResponsesGetDays>> GetSchedulesForAllDays(int pageSize, int pageNumber);
         Task<PageResult<DataResponsesSchedule>> GetAlls(InputScheduleData input, int pageSize, int pageNumber);
         IEnumerable<Schedule> GetAllSchedulesNoPagination();

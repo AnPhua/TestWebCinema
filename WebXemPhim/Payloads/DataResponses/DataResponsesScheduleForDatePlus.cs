@@ -1,0 +1,15 @@
+﻿using WebXemPhim.Entities;
+
+namespace WebXemPhim.Payloads.DataResponses
+{
+    public class DataResponsesScheduleForDatePlus : DataResponsesId
+    {
+        public int MovieId { get; set; }
+        public int Day { get; set; }
+        public int Month { get; set; }
+        public int Year { get; set; }
+        public string DayDetails { get; set; }
+        public string Date { get; set; }
+        public IQueryable<ControlDatePlus> ListTimeinSchedules { get; set; }
+    }
+}

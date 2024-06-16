@@ -114,11 +114,7 @@ namespace WebXemPhim.Payloads.Converters
             var groupedSchedules = schedules
                 .GroupBy(s => new
                 {
-                    s.MovieId,
-                    s.RoomId,
-                    Day = s.StartAt.Day,
-                    Month = s.StartAt.Month,
-                    Year = s.StartAt.Year
+                    s.MovieId,s.StartAt.Day
                 });
 
             var results = new List<DataResponsesScheduleForDate>();
@@ -164,22 +160,77 @@ namespace WebXemPhim.Payloads.Converters
 
             return results;
         }
-        public List<DataResponsesScheduleForDate> ConvertDatafordaySort(IEnumerable<Schedule> schedules)
+        //public List<DataResponsesScheduleForDatePlus> ConvertDatafordaySort(IEnumerable<Schedule> schedules)
+        //{
+        //    var filteredSchedules = schedules
+        //       .Where(s => s.StartAt >= DateTime.Now)
+        //       .OrderBy(s => s.StartAt);
+        //    var groupedSchedules = filteredSchedules
+        //        .GroupBy(s => new
+        //        {
+        //            s.MovieId,
+        //            s.RoomId,
+        //            Day = s.StartAt.Day,
+        //            Month = s.StartAt.Month,
+        //            Year = s.StartAt.Year
+        //        });
+
+        //    var results = new List<DataResponsesScheduleForDatePlus>();
+
+        //    foreach (var group in groupedSchedules)
+        //    {
+        //        var tickets = _appDbContext.Tickets
+        //            .Where(x => group.Select(g => g.Id).Contains(x.ScheduleId))
+        //            .ToList();
+
+        //        var listTimeinSchedules = group.Select(g =>
+        //        {
+        //            var scheduleTickets = tickets.Where(x => x.ScheduleId == g.Id).ToList();
+        //            var emptySeats = scheduleTickets.Count(x => x.TypeTicket == 1 && x.IsActive == true);
+        //            var roomName = _appDbContext.Rooms.SingleOrDefault(r => r.Id == g.RoomId)?.Name;
+        //            return new ControlDatePlus
+        //            {
+        //                Id = g.Id,
+        //                TimeDt = g.StartAt.ToString("HH:mm"),
+        //                RoomName = roomName,
+        //                StartAt = g.StartAt,
+        //                EmptySeat = emptySeats
+        //            };
+        //        }).ToList();
+
+        //        var firstSchedule = group.First();
+
+        //        DateTime dt = firstSchedule.StartAt;
+        //        DayOfWeek dayOfWeek = dt.DayOfWeek;
+        //        string shortDayOfWeek = GetShortDayOfWeek(dayOfWeek);
+
+        //        results.Add(new DataResponsesScheduleForDatePlus
+        //        {
+        //            Id = firstSchedule.Id,
+        //            MovieId = firstSchedule.MovieId,
+        //            Day = dt.Day,
+        //            Month = dt.Month,
+        //            Year = dt.Year,
+        //            DayDetails = dt.Day + "/" + dt.Month + "/" + dt.Year,
+        //            Date = shortDayOfWeek,
+        //            ListTimeinSchedules = listTimeinSchedules.AsQueryable()
+        //        });
+        //    }
+
+        //    return results;
+        //}
+        public List<DataResponsesScheduleForDatePlus> ConvertDatafordaySort(IEnumerable<Schedule> schedules)
         {
             var filteredSchedules = schedules
-               .Where(s => s.StartAt >= DateTime.Now)
-               .OrderBy(s => s.StartAt);
+                .Where(s => s.StartAt >= DateTime.Now);
+
             var groupedSchedules = filteredSchedules
                 .GroupBy(s => new
                 {
-                    s.MovieId,
-                    s.RoomId,
-                    Day = s.StartAt.Day,
-                    Month = s.StartAt.Month,
-                    Year = s.StartAt.Year
+                    s.MovieId,s.StartAt.Day
                 });
 
-            var results = new List<DataResponsesScheduleForDate>();
+            var results = new List<DataResponsesScheduleForDatePlus>();
 
             foreach (var group in groupedSchedules)
             {
@@ -187,18 +238,23 @@ namespace WebXemPhim.Payloads.Converters
                     .Where(x => group.Select(g => g.Id).Contains(x.ScheduleId))
                     .ToList();
 
-                var listTimeinSchedules = group.Select(g =>
+                var listTimeinSchedules = new List<ControlDatePlus>();
+
+                foreach (var schedule in group)
                 {
-                    var scheduleTickets = tickets.Where(x => x.ScheduleId == g.Id).ToList();
+                    var scheduleTickets = tickets.Where(x => x.ScheduleId == schedule.Id).ToList();
                     var emptySeats = scheduleTickets.Count(x => x.TypeTicket == 1 && x.IsActive == true);
-                    return new ControlDate
+                    var roomName = _appDbContext.Rooms.SingleOrDefault(r => r.Id == schedule.RoomId)?.Name;
+
+                    listTimeinSchedules.Add(new ControlDatePlus
                     {
-                        Id = g.Id,
-                        TimeDt = g.StartAt.ToString("HH:mm"),
-                        StartAt = g.StartAt,
+                        Id = schedule.Id,
+                        TimeDt = schedule.StartAt.ToString("HH:mm"),
+                        RoomName = roomName,
+                        StartAt = schedule.StartAt,
                         EmptySeat = emptySeats
-                    };
-                }).ToList();
+                    });
+                }
 
                 var firstSchedule = group.First();
 
@@ -206,16 +262,90 @@ namespace WebXemPhim.Payloads.Converters
                 DayOfWeek dayOfWeek = dt.DayOfWeek;
                 string shortDayOfWeek = GetShortDayOfWeek(dayOfWeek);
 
-                results.Add(new DataResponsesScheduleForDate
+                results.Add(new DataResponsesScheduleForDatePlus
                 {
                     Id = firstSchedule.Id,
                     MovieId = firstSchedule.MovieId,
-                    RoomName = _appDbContext.Rooms.SingleOrDefault(x => x.Id == firstSchedule.RoomId).Name,
                     Day = dt.Day,
                     Month = dt.Month,
                     Year = dt.Year,
-                    DayDetails = dt.Day + "/" + dt.Month + "/" + dt.Year,
+                    DayDetails = $"{dt.Day}/{dt.Month}/{dt.Year}",
                     Date = shortDayOfWeek,
+                    ListTimeinSchedules = listTimeinSchedules.AsQueryable()
+                });
+            }
+
+            return results;
+        }
+        public List<DataResponsesMovieDetailsSchedule> ConvertDatafordaySortaddmv(IEnumerable<Schedule> schedules)
+        {
+            var filteredSchedules = schedules
+                .Where(s => s.StartAt >= DateTime.Now);
+
+            var groupedSchedules = filteredSchedules
+                .GroupBy(s => new
+                {
+                    s.MovieId,
+                    s.StartAt.Day
+                });
+
+            var results = new List<DataResponsesMovieDetailsSchedule>();
+
+            foreach (var group in groupedSchedules)
+            {
+                var tickets = _appDbContext.Tickets
+                    .Where(x => group.Select(g => g.Id).Contains(x.ScheduleId))
+                    .ToList();
+
+                var listTimeinSchedules = new List<ControlDatePlus>();
+
+                foreach (var schedule in group)
+                {
+                    var scheduleTickets = tickets.Where(x => x.ScheduleId == schedule.Id).ToList();
+                    var emptySeats = scheduleTickets.Count(x => x.TypeTicket == 1 && x.IsActive == true);
+                    var roomName = _appDbContext.Rooms.SingleOrDefault(r => r.Id == schedule.RoomId)?.Name;
+
+                    listTimeinSchedules.Add(new ControlDatePlus
+                    {
+                        Id = schedule.Id,
+                        TimeDt = schedule.StartAt.ToString("HH:mm"),
+                        RoomName = roomName,
+                        StartAt = schedule.StartAt,
+                        EmptySeat = emptySeats
+                    });
+                }
+
+                var firstSchedule = group.FirstOrDefault();
+                //if (firstSchedule == null)
+                //{
+                //    continue;
+                //}
+
+                var movie = _appDbContext.Movies.SingleOrDefault(x => x.Id == firstSchedule.MovieId);
+                //if (movie == null)
+                //{
+                //    continue;
+                //}
+                var movieTypeName = _appDbContext.MovieTypes.SingleOrDefault(mt => mt.Id == movie.MovieTypeId)?.MovieTypeName;
+                var rateName = _appDbContext.Rates.SingleOrDefault(mt => mt.Id == movie.RateId)?.Code;
+                DateTime dt = firstSchedule.StartAt;
+                DayOfWeek dayOfWeek = dt.DayOfWeek;
+                string shortDayOfWeek = GetShortDayOfWeek(dayOfWeek);
+                results.Add(new DataResponsesMovieDetailsSchedule
+                {
+                    Id = firstSchedule.Id,
+                    Day = dt.Day,
+                    Month = dt.Month,
+                    Year = dt.Year,
+                    DayDetails = $"{dt.Day}/{dt.Month}/{dt.Year}",
+                    Date = shortDayOfWeek,
+                    MovieId = movie.Id,
+                    Image = movie.Image,
+                    MovieTypeName = movieTypeName,
+                    Name = movie.Name,
+                    RateCode = rateName,
+                    Trailer = movie.Trailer,
+                    MovieDuration = movie.MovieDuration,
                     ListTimeinSchedules = listTimeinSchedules.AsQueryable()
                 });
             }
